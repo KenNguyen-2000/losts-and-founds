@@ -3,19 +3,24 @@ import authReducer from './auth/auth.slice';
 import { useDispatch, TypedUseSelectorHook, useSelector } from 'react-redux';
 import createSagaMiddleware from '@redux-saga/core';
 import { rootSaga } from './root.saga';
-import postRedcuer from './post/postSlice';
+import postReducer from './post/postSlice';
 
 const sagaMiddleware = createSagaMiddleware();
 
 const reducers = combineReducers({
   auth: authReducer,
-  posts: postRedcuer,
+  posts: postReducer,
 });
 
 export const store = configureStore({
   reducer: reducers,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat([sagaMiddleware]),
+    getDefaultMiddleware({
+      serializableCheck: {
+        // Ignore these field paths in all actions
+        ignoredActionPaths: ['payload.images'],
+      },
+    }).concat([sagaMiddleware]),
 });
 
 sagaMiddleware.run(rootSaga);

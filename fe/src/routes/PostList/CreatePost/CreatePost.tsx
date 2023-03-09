@@ -1,38 +1,51 @@
 import { regular, solid } from '@fortawesome/fontawesome-svg-core/import.macro';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useState } from 'react';
-import { InputFiles } from 'typescript';
+import React, { useState, useEffect } from 'react';
+import { postActions, selectPostsLoading } from '../../../redux/post/postSlice';
+import { useAppDispatch, useAppSelector } from '../../../redux/store';
 import interceptor from '../../../services/interceptor';
 
-const CreatePost = () => {
+const CreatePost = ({ closeModal }: any) => {
+  const [imageSrc, setImageSrc] = useState('');
   const [files, setFiles] = useState<Blob[]>([]);
+  const dispatch = useAppDispatch();
+  const isLoading = useAppSelector(selectPostsLoading);
+
   const handleCreatePost = async (event: any) => {
     event.preventDefault();
-    const { title, location, description } = event.target;
+    const { title, location, description, postType }: any = event.target;
+    let postTypeValue = postType[0];
+    for (let type of postType) {
+      if (type.checked) {
+        postTypeValue = type;
+      }
+    }
 
     const formData = new FormData();
     formData.append('title', title.value);
     formData.append('location', location.value);
     formData.append('description', description.value);
+    formData.append('postType', postTypeValue.value);
 
-    files.forEach((file: Blob) => formData.append('files', file));
-    console.log(formData);
-    try {
-      const res = await interceptor.post('/posts', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      if (res.status === 200) {
-        alert('success');
-      }
-    } catch (error) {
-      console.log(error);
+    files.forEach((file: Blob) => formData.append('images', file));
+
+    dispatch(
+      postActions.createPost({
+        title: title.value,
+        location: location.value,
+        description: description.value,
+        postType: postType.value,
+        images: files,
+      })
+    );
+
+    if (!isLoading) {
+      console.log('first');
+      closeModal();
     }
   };
 
   const handleImageFilesChange = async (event: any) => {
-    const reader = new FileReader();
     const filesInput = [...event.target.files];
 
     setFiles(filesInput);
@@ -46,6 +59,7 @@ const CreatePost = () => {
           <FontAwesomeIcon
             icon={regular('circle-xmark')}
             className='w-6 h-6 absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer'
+            onClick={closeModal}
           />
         </div>
         <div className='w-full h-[1px] bg-gray-200'></div>
@@ -114,6 +128,43 @@ const CreatePost = () => {
                 className='mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6'
               />
             </div>
+            <fieldset>
+              <legend className='block text-sm font-medium leading-6 text-gray-900'>
+                Type of Post:
+              </legend>
+              <div className='mt-4 space-y-4'>
+                <div className='flex items-center '>
+                  <input
+                    id='category-lost'
+                    name='postType'
+                    type='radio'
+                    value='Lost'
+                    className='h-4 w-4 border-gray-300 text-amber-500 focus:ring-amber-500 cursor-pointer'
+                  />
+                  <label
+                    htmlFor='category-lost'
+                    className='ml-3 block text-sm font-medium leading-6 text-gray-900 cursor-pointer'
+                  >
+                    Lost
+                  </label>
+                </div>
+                <div className='flex items-center '>
+                  <input
+                    id='category-found'
+                    name='postType'
+                    type='radio'
+                    value='Found'
+                    className='h-4 w-4 border-gray-300 text-amber-500 focus:ring-amber-500 cursor-pointer'
+                  />
+                  <label
+                    htmlFor='category-found'
+                    className='ml-3 block text-sm font-medium leading-6 text-gray-900 cursor-pointer'
+                  >
+                    Found
+                  </label>
+                </div>
+              </div>
+            </fieldset>
             <div className='w-full p-2 border border-gray-200 rounded-lg relative'>
               <input
                 type='file'
@@ -126,7 +177,7 @@ const CreatePost = () => {
 
               <label
                 htmlFor='imageFiles'
-                className='w-full h-[200px] bg-slate-100 rounded-lg flex flex-col items-center justify-center cursor-pointer'
+                className='w-full min-h-[200px] max-h-[350px] bg-slate-100 rounded-lg flex flex-col items-center justify-center cursor-pointer relative'
               >
                 <div className='w-14 h-14 rounded-full bg-slate-300 flex items-center justify-center'>
                   <FontAwesomeIcon icon={solid('download')} size={'2xl'} />

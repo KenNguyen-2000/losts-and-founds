@@ -1,25 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import logo from '../../assets/images/logo.png';
-import { useAppDispatch, useAppSelector } from '../../redux/store';
+import { useAppDispatch } from '../../redux/store';
 import './style.scss';
-import { authActions, selectAuthLoggedIn } from '../../redux/auth/auth.slice';
+import { authActions } from '../../redux/auth/auth.slice';
 import { useNavigate } from 'react-router';
 
 const Navbar = () => {
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const isLoggedIn = useAppSelector(selectAuthLoggedIn);
 
   const handleLogout = async () => {
     await dispatch(authActions.logout());
   };
-
-  useEffect(() => {
-    if (!isLoggedIn) {
-      navigate('/login');
-    }
-  }, [isLoggedIn]);
 
   return (
     <div className='w-full flex items-center justify-between border-b border-gray-200 px-8  py-4 shadow-md '>
@@ -43,7 +36,10 @@ const Navbar = () => {
               isAvatarOpen ? 'scale-100' : ''
             } `}
           >
-            <li className='hover:bg-slate-300 px-3 py-2 cursor-pointer'>
+            <li
+              className='hover:bg-slate-300 px-3 py-2 cursor-pointer'
+              onClick={() => navigate('/profile')}
+            >
               Profile
             </li>
             <li

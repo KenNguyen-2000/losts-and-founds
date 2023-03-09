@@ -7,3 +7,9 @@
 .post__img {
   width: calc((100vh + -325px) * 0.9779582366589327);
 }
+
+.post__icon.active {
+  path {
+    fill: #f59e0b;
+  }
+}

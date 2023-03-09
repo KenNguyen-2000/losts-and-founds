@@ -1,15 +1,13 @@
-import React, { FormEvent, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import loginBanner from '../../assets/images/login-banner.png';
-import { useDispatch } from 'react-redux';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { authActions, selectAuthLoggedIn } from '../../redux/auth/auth.slice';
-import interceptor from '../../services/interceptor';
 import { useNavigate } from 'react-router';
 
 const Login = () => {
   const dispatch = useAppDispatch();
-  const isLoggedIn = useAppSelector(selectAuthLoggedIn);
   const navigate = useNavigate();
+  const isLoggedIn = useAppSelector(selectAuthLoggedIn);
 
   const submitLogin = async (event: any) => {
     event.preventDefault();

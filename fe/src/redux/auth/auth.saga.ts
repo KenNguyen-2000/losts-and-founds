@@ -23,7 +23,7 @@ function* handleLogin(payload: LoginPayload) {
       payload.password
     );
     const { status, data } = res;
-    console.log(status);
+    console.log(data);
     if (status === 200) {
       localStorage.setItem('access_token', data.accessToken);
       yield put(authActions.loginSuccess(data));
@@ -42,7 +42,7 @@ function* handleLogout() {
 function* watchLoginFlow() {
   while (true) {
     const isLoggedIn = Boolean(localStorage.getItem('access_token'));
-
+    console.log('Watch auth');
     if (!isLoggedIn) {
       const action: PayloadAction<LoginPayload> = yield take(
         authActions.login.type
