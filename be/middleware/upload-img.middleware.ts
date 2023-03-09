@@ -13,7 +13,7 @@ const storage = multer.diskStorage({
 });
 
 const Data = multer({ storage: storage });
-const uploadFiles = Data.array('files', 12);
+const uploadFiles = Data.array('images', 12);
 export const uploadFilesMiddleware = async (
   req: Request,
   res: Response,

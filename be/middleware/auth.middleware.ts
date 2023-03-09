@@ -53,7 +53,7 @@ export const isPostOwnerMiddleware = async (
     if (!post) {
       return next(new NotFoundError('Post id does not exist!'));
     }
-    const isOwner = user?._id === post.createdBy;
+    const isOwner = post.createdBy.equals(user?._id);
 
     if (!isOwner) {
       return next(

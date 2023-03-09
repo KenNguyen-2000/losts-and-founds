@@ -10,6 +10,7 @@ import dotenv from 'dotenv';
 import errorHandler from './middleware/errorHandler.middleware';
 import postRouter from './routes/post.router';
 import path from 'path';
+import commentRouter from './routes/comment.router';
 
 dotenv.config();
 
@@ -31,11 +32,14 @@ app.use(helmet());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(morgan('dev'));
-app.use('/upload', express.static(path.join(__dirname, '/uploads')));
-console.log(path.join(__dirname, 'public/uploads'));
 
+app.use(
+  '/api/v1/upload',
+  express.static(path.join(__dirname, '..', 'uploads'))
+);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/posts', postRouter);
+app.use('/api/v1/comments', commentRouter);
 
 app.use(errorHandler);
 

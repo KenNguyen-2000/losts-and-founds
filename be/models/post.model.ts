@@ -5,6 +5,7 @@ export interface IPost {
   description: string;
   location: string;
   images: string[];
+  postType: string;
   createdBy: Types.ObjectId;
   comments?: Types.ObjectId[];
   likes?: Types.ObjectId[];
@@ -29,6 +30,10 @@ const postsSchema = new mongoose.Schema<IPost>(
     },
     images: {
       type: [String],
+      require: true,
+    },
+    postType: {
+      type: String,
       require: true,
     },
     createdBy: {

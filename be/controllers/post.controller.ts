@@ -11,6 +11,38 @@ import {
 } from '../errors/error';
 
 class PostController {
+  async createPost(req: Request, res: Response, next: NextFunction) {
+    const { title, description, location, postType }: IPost = req.body;
+    const { user, files } = req;
+    try {
+      if (!files) {
+        next(new BadRequestError('At least one image required!'));
+      }
+      console.log(files);
+      const images: string[] = (files as Express.Multer.File[])?.map(
+        (file: Express.Multer.File) => {
+          return file.filename;
+        }
+      );
+      const newPost: IPost = await postService.createPost({
+        title,
+        description,
+        images,
+        postType,
+        createdBy: user?._id,
+        location,
+      });
+
+      if (newPost) {
+        res
+          .status(201)
+          .json({ post: newPost, message: 'Create post successfully!' });
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getPostList(req: Request, res: Response, next: NextFunction) {
     try {
       const posts: IPost[] = await postService.getPostList();
@@ -54,36 +86,6 @@ class PostController {
     }
   }
 
-  async createPost(req: Request, res: Response, next: NextFunction) {
-    const { title, description, location }: IPost = req.body;
-    const { user, files } = req;
-    try {
-      if (!files) {
-        next(new BadRequestError('At least one image required!'));
-      }
-      console.log(files);
-      const images: string[] = (files as Express.Multer.File[])?.map(
-        (file: Express.Multer.File) => {
-          return file.filename;
-        }
-      );
-      const newPost: IPost = await postService.createPost({
-        title,
-        description,
-        images,
-        createdBy: user?._id,
-        location,
-      });
-
-      if (newPost) {
-        res
-          .status(201)
-          .json({ post: newPost, message: 'Create post successfully!' });
-      }
-    } catch (error) {
-      next(error);
-    }
-  }
   async updatePost(req: Request, res: Response, next: NextFunction) {
     const { postId } = req.params;
     const {
@@ -94,10 +96,12 @@ class PostController {
       images,
       likes,
       location,
+      postType,
       status,
     }: IUpdatePost = req.body;
     try {
-      const updatedPost: IPost = await postService.updatePost(postId, {
+      const updatedPost: IPost = await postService.updatePost({
+        _id: postId,
         title,
         description,
         comments,
@@ -105,12 +109,13 @@ class PostController {
         images,
         likes,
         location,
+        postType,
         status,
       });
       if (updatedPost) {
         res
           .status(200)
-          .json({ message: 'Update post successfully!', updatedPost });
+          .json({ message: 'Update post successfully!', post: updatedPost });
       } else {
         next(new NotFoundError('Post id does not exist!'));
       }
@@ -131,13 +136,14 @@ class PostController {
   async likePost(req: Request, res: Response, next: NextFunction) {
     const { postId } = req.params;
     const { user } = req;
-    console.log(user);
+
     try {
       const updatedPost = await postService.likePost(postId, user?._id);
+
       if (updatedPost) {
         res
           .status(200)
-          .json({ message: 'Like post successfully!', updatedPost });
+          .json({ message: 'Like post successfully!', post: updatedPost });
       } else {
         next(new InternalServerError('Something went wrong!'));
       }
@@ -155,7 +161,7 @@ class PostController {
       if (updatedPost) {
         res
           .status(200)
-          .json({ message: 'Dislike post successfully!', updatedPost });
+          .json({ message: 'Dislike post successfully!', post: updatedPost });
       } else {
         next(new InternalServerError('Something went wrong!'));
       }
