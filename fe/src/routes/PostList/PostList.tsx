@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Navbar } from '../../components';
 import { IPost } from '../../interfaces/post';
-import { selectAuthLoading } from '../../redux/auth/auth.slice';
 import {
   postActions,
   selectPosts,
@@ -20,7 +19,7 @@ const PostList = () => {
 
   useEffect(() => {
     dispatch(postActions.getPostList());
-    console.log(posts);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
