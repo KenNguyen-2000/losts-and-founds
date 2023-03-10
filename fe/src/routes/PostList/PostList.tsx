@@ -8,14 +8,17 @@ import {
 } from '../../redux/post/postSlice';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import CreatePost from './CreatePost/CreatePost';
+import EditPostModal from './EditPostModal/EditPostModal';
 import Post from './Post/Post';
 
 const PostList = () => {
   const dispatch = useAppDispatch();
   const posts = useAppSelector(selectPosts);
   const isLoading = useAppSelector(selectPostsLoading);
+  const [selectedPost, setSelectedPost] = useState<IPost | undefined>(
+    undefined
+  );
   const [filter, setFilter] = useState('');
-
   const [isShow, setIsShow] = useState(false);
 
   const handleFilterChange = (event: any) => {
@@ -36,7 +39,13 @@ const PostList = () => {
       <Navbar />
       <div className='flex-grow flex flex-col md:flex-row gap-8 items-start justify-between bg-gray-100 px-8 sm:px-5'>
         {isShow && <CreatePost closeModal={() => setIsShow(false)} />}
-        <div className='w-full lg:w-[350px] py-4'>
+        {selectedPost ? (
+          <EditPostModal
+            post={selectedPost}
+            closeModal={() => setSelectedPost(undefined)}
+          />
+        ) : null}
+        <div className='w-full lg:w-[400px] py-4'>
           <fieldset className='w-full bg-white rounded-md shadow-md p-3'>
             <legend className='sr-only'>Filter</legend>
             <div
@@ -59,7 +68,7 @@ const PostList = () => {
                 <div className='ml-3 text-sm leading-6'>
                   <label
                     htmlFor='comments'
-                    className='font-medium text-gray-900'
+                    className='font-medium text-gray-900 cursor-pointer'
                   >
                     Top Likes
                   </label>
@@ -81,7 +90,7 @@ const PostList = () => {
                 <div className='ml-3 text-sm leading-6'>
                   <label
                     htmlFor='candidates'
-                    className='font-medium text-gray-900'
+                    className='font-medium text-gray-900 cursor-pointer'
                   >
                     Latest
                   </label>
@@ -101,7 +110,10 @@ const PostList = () => {
                   />
                 </div>
                 <div className='ml-3 text-sm leading-6'>
-                  <label htmlFor='offers' className='font-medium text-gray-900'>
+                  <label
+                    htmlFor='offers'
+                    className='font-medium text-gray-900 cursor-pointer'
+                  >
                     Most discuss
                   </label>
                   <p className='text-gray-500 md:sr-only lg:not-sr-only'>
@@ -112,7 +124,7 @@ const PostList = () => {
             </div>
           </fieldset>
         </div>
-        <div className='flex-grow flex flex-col w-full md:w-auto items-center py-4 gap-4'>
+        <div className='flex-grow flex flex-col items-center w-full md:max-w-[700px] lg:max-w-[800px] py-4 gap-4'>
           <div
             className='w-full  rounded-lg bg-white px-4 py-2 flex  items-center gap-4'
             onClick={() => setIsShow(true)}
@@ -126,9 +138,15 @@ const PostList = () => {
           </div>
           {isLoading
             ? 'Fetching posts'
-            : posts?.map((post: IPost) => <Post key={post._id} {...post} />)}
+            : posts?.map((post: IPost) => (
+                <Post
+                  key={post._id}
+                  setSelectedPost={() => setSelectedPost(post)}
+                  {...post}
+                />
+              ))}
         </div>
-        <div className='w-full lg:w-[350px]'></div>
+        <div className='w-full lg:w-[400px]'></div>
       </div>
     </div>
   );

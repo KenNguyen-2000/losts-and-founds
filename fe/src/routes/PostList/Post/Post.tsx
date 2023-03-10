@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import logo from '../../../assets/images/logo.png';
 import './Post.style.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -7,6 +7,12 @@ import CommentList from '../CommentList/CommentList';
 import { IPost } from '../../../interfaces/post';
 import { useAppDispatch } from '../../../redux/store';
 import { postActions } from '../../../redux/post/postSlice';
+import PreviewImage from './PreviewImage/PreviewImage';
+import { GridImages } from '../../../components';
+
+interface IPostComponent extends IPost {
+  setSelectedPost: any;
+}
 
 const Post = ({
   _id,
@@ -21,13 +27,16 @@ const Post = ({
   likes,
   status,
   updatedAt,
-}: IPost) => {
+  setSelectedPost,
+}: IPostComponent) => {
   const dispatch = useAppDispatch();
+  const [imgSrc, setImgSrc] = useState(-1);
 
   const handleLikeBtn = () => {
     let type = 'like';
     if (likes?.length > 0) {
-      if (likes.includes(createdBy._id)) {
+      const isLiked = likes.find((like) => like._id === createdBy._id);
+      if (isLiked) {
         type = 'dislike';
       }
     }
@@ -43,6 +52,13 @@ const Post = ({
 
   return (
     <>
+      {imgSrc >= 0 ? (
+        <PreviewImage
+          imgNum={imgSrc}
+          images={images}
+          setClosePreview={() => setImgSrc(-1)}
+        />
+      ) : null}
       <section className='post__wrapper w-full bg-white flex flex-col rounded-lg border border-gray-300 '>
         <header className='post__header w-full px-4 py-2 flex justify-between items-center'>
           <div className='flex gap-2'>
@@ -59,7 +75,10 @@ const Post = ({
             </div>
           </div>
           <div className='flex gap-2'>
-            <div className='w-7 h-7 p-1.5 flex items-center justify-center rounded-full hover:bg-slate-300 post__icon'>
+            <div
+              className='w-7 h-7 p-1.5 flex items-center justify-center rounded-full hover:bg-slate-300 post__icon'
+              onClick={setSelectedPost}
+            >
               <FontAwesomeIcon
                 icon={solid('ellipsis')}
                 className=' cursor-pointer w-auto h-full '
@@ -78,19 +97,37 @@ const Post = ({
         </header>
         <section className='post__body w-full flex flex-col gap-2'>
           <div className='post__description w-full px-4'>{description}</div>
-          <div className='max-w-full min-w-[500px] px-4 border-t border-b border-gray-200 flex items-center justify-center'>
-            <img
+          <div
+            className='max-w-full min-w-[500px] px-4 border-t border-b border-gray-200 flex items-center justify-center cursor-pointer'
+            onClick={() => setImgSrc(0)}
+          >
+            {/* <img
               className='post__img w-full h-full object-contain'
               alt='post img'
               crossOrigin='anonymous'
               src={`${process.env.REACT_APP_IMG_URL}/${images[0]}`}
-            />
+            /> */}
+            <GridImages />
           </div>
         </section>
         <section className='post__bottom flex flex-col px-4'>
-          <div className='w-full flex justify-end py-[10px]'>
-            <div className='text-sm text-gray-500 '>
-              {comments?.length || 0} comments
+          <div className='w-full flex justify-between py-[10px]'>
+            <div className='text-sm text-gray-500 flex gap-2 items-center'>
+              <FontAwesomeIcon
+                icon={regular('thumbs-up')}
+                className='bg-amber-400 rounded-full p-1.5'
+              />
+
+              <span className='text-gray-500'>
+                {likes.length > 0
+                  ? likes.length > 1
+                    ? `${likes[0].name} and ${likes.length - 1} other people`
+                    : `${likes[0].name}`
+                  : null}
+              </span>
+            </div>
+            <div className='text-sm text-gray-500'>
+              {comments.length} comments
             </div>
           </div>
           <div className='flex items-center justify-evenly  border-y border-gray-300'>
@@ -102,21 +139,25 @@ const Post = ({
               <FontAwesomeIcon
                 icon={regular('thumbs-up')}
                 className={`w-5 h-5  post__icon ${
-                  likes?.includes(createdBy._id) ? 'active' : ''
+                  likes.find((like) => like._id === createdBy._id)
+                    ? 'active'
+                    : ''
                 }`}
                 fixedWidth
               />
               <span
                 className={`${
-                  likes?.includes(createdBy._id) ? 'text-amber-500' : ''
+                  likes.find((like) => like._id === createdBy._id)
+                    ? 'text-amber-500'
+                    : ''
                 }`}
               >
                 Like
               </span>
             </div>
-            <div
+            <a
               className='w-full h-11 flex gap-3 items-center justify-center text-sm font-medium cursor-pointer hover:bg-slate-200 text-gray-500'
-              role='button'
+              href={`#comment_${_id}`}
               onClick={handleCommentBtn}
             >
               <FontAwesomeIcon
@@ -125,7 +166,7 @@ const Post = ({
                 fixedWidth
               />
               <span>Comment</span>
-            </div>
+            </a>
           </div>
           <CommentList postId={_id} comments={comments} />
         </section>

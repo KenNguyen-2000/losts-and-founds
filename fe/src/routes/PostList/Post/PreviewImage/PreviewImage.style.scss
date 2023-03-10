@@ -1,0 +1,32 @@
+.previewImage__wrapper {
+  .previewImage-panel-control {
+    &:hover {
+      path {
+        fill: #fbbf24;
+      }
+    }
+
+    &.previous:hover {
+      svg {
+        transform: translateX(-8px);
+      }
+    }
+
+    &.next:hover {
+      svg {
+        transform: translateX(8px);
+      }
+    }
+  }
+
+  svg {
+    &:first-of-type:hover {
+      path {
+        fill: #d1d5db;
+      }
+    }
+    path {
+      fill: #e5e7eb;
+    }
+  }
+}
