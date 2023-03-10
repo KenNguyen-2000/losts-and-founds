@@ -9,12 +9,12 @@ const commentsSchema = new mongoose.Schema<IComment>(
   {
     description: {
       type: String,
-      require: true,
+      required: true,
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'users',
-      require,
+      required: true,
     },
   },
   {

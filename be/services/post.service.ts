@@ -53,8 +53,9 @@ const getPostList = async (): Promise<IPost[]> => {
         },
       },
     })
+    .populate('likes', 'name')
     .exec();
-
+  console.log(posts);
   return posts;
 };
 
@@ -119,30 +120,11 @@ const deletePost = async (postId: string): Promise<void> => {
   }
 };
 
-const updatePost = async ({
-  _id,
-  title,
-  description,
-  comments,
-  createdBy,
-  images,
-  likes,
-  postType,
-  location,
-  status,
-}: IUpdatePost): Promise<IPost> => {
+const updatePost = async (updatedFields: IUpdatePost): Promise<IPost> => {
   const updatedPost = await Posts.findOneAndUpdate(
-    { _id: _id },
+    { _id: updatedFields._id },
     {
-      title: title,
-      description: description,
-      comments: comments,
-      createdBy: createdBy,
-      images: images,
-      likes: likes,
-      location: location,
-      postType: postType,
-      status,
+      $set: updatedFields,
     },
     { new: true }
   ).exec();
@@ -150,7 +132,7 @@ const updatePost = async ({
     throw new NotFoundError('Post id not exists!');
   }
 
-  return { ...updatedPost };
+  return { ...updatedPost.toObject() };
 };
 
 const likePost = async (postId: string, userId: string): Promise<IPost> => {

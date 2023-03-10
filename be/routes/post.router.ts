@@ -20,8 +20,11 @@ postRouter
 postRouter
   .route('/:postId')
   .get([authMiddleware], postController.getPost)
-  .put([authMiddleware, isPostOwnerMiddleware], postController.updatePost)
-  .delete([authMiddleware, isPostOwnerMiddleware], postController.deletPost);
+  .put(
+    [authMiddleware, isPostOwnerMiddleware, uploadFilesMiddleware],
+    postController.updatePost
+  )
+  .delete([authMiddleware, isPostOwnerMiddleware], postController.deletePost);
 
 postRouter
   .route('/like/:postId')

@@ -14,26 +14,26 @@ const userSchema = new mongoose.Schema<IUser>(
     username: {
       type: String,
       unique: true,
-      require: true,
+      required: true,
     },
     phoneNumber: {
       type: String,
       unique: true,
-      require: true,
+      required: true,
       min: 9,
       max: 15,
     },
     password: {
       type: String,
-      require: true,
+      required: true,
     },
     dob: {
       type: Date,
-      require: true,
+      required: true,
     },
     name: {
       type: String,
-      require: true,
+      required: true,
     },
     avatarUrl: {
       type: String,

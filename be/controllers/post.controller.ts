@@ -88,30 +88,26 @@ class PostController {
 
   async updatePost(req: Request, res: Response, next: NextFunction) {
     const { postId } = req.params;
-    const {
+    const { title, description, location, postType }: IUpdatePost = req.body;
+    const { files } = req;
+
+    let updatedFiels: IUpdatePost = {
+      _id: postId,
       title,
       description,
-      comments,
-      createdBy,
-      images,
-      likes,
       location,
       postType,
-      status,
-    }: IUpdatePost = req.body;
+    };
+
+    if (files?.length! > 0) {
+      updatedFiels.images = (files as Express.Multer.File[])?.map(
+        (file: Express.Multer.File) => {
+          return file.filename;
+        }
+      );
+    }
     try {
-      const updatedPost: IPost = await postService.updatePost({
-        _id: postId,
-        title,
-        description,
-        comments,
-        createdBy,
-        images,
-        likes,
-        location,
-        postType,
-        status,
-      });
+      const updatedPost: IPost = await postService.updatePost(updatedFiels);
       if (updatedPost) {
         res
           .status(200)
@@ -123,7 +119,8 @@ class PostController {
       next(error);
     }
   }
-  async deletPost(req: Request, res: Response, next: NextFunction) {
+
+  async deletePost(req: Request, res: Response, next: NextFunction) {
     const { postId } = req.params;
     console.log('Delete post controller');
     try {

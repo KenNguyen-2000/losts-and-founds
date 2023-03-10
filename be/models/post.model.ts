@@ -5,7 +5,7 @@ export interface IPost {
   description: string;
   location: string;
   images: string[];
-  postType: string;
+  postType: 'lost' | 'found';
   createdBy: Types.ObjectId;
   comments: Types.ObjectId[];
   likes?: Types.ObjectId[];
@@ -18,28 +18,29 @@ const postsSchema = new mongoose.Schema<IPost>(
   {
     title: {
       type: String,
-      require: true,
+      required: true,
     },
     description: {
       type: String,
-      require: true,
+      required: true,
     },
     location: {
       type: String,
-      require: true,
+      required: true,
     },
     images: {
       type: [String],
-      require: true,
+      required: true,
     },
     postType: {
       type: String,
-      require: true,
+      required: true,
+      enum: ['lost', 'found'],
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'users',
-      require: true,
+      required: true,
     },
     comments: {
       type: [mongoose.Schema.Types.ObjectId],

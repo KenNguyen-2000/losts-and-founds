@@ -4,12 +4,8 @@ export interface IUpdatePost {
   title: string;
   description: string;
   location: string;
-  images: string[];
+  images?: string[];
   postType: string;
-  createdBy?: string;
-  comments?: string[];
-  likes?: string[];
-  status?: string;
 }
 
 export interface ICommentPost {
