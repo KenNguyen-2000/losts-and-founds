@@ -7,7 +7,7 @@ export interface IPost {
   images: string[];
   postType: string;
   createdBy: Types.ObjectId;
-  comments?: Types.ObjectId[];
+  comments: Types.ObjectId[];
   likes?: Types.ObjectId[];
   status?: string;
   createdAt?: Date;

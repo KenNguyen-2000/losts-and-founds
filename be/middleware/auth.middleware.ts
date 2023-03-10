@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import Users from '../models/user.model';
 import NotFoundError from '../errors/NotFound.error';
 import postService from '../services/post.service';
+import ForbiddenError from '../errors/Forbidden.error';
 
 export const authMiddleware = async (
   req: Request,
@@ -23,20 +24,19 @@ export const authMiddleware = async (
   if (!token) {
     return next(new UnauthorizedError('User are not logged in!'));
   }
-
   try {
     const decoded: any = await jwt.verify(token, process.env.JWT_SECRET!);
 
     const user = await Users.findOne({ _id: decoded.id });
 
     if (!user) {
-      return next(new NotFoundError('Not authorized to access this route'));
+      return next(new NotFoundError('User does not exist!'));
     }
 
     req.user = user;
     next();
-  } catch (error) {
-    next(error);
+  } catch (error: any) {
+    return next(new UnauthorizedError('Not authorized to access this route.'));
   }
 };
 
@@ -53,11 +53,12 @@ export const isPostOwnerMiddleware = async (
     if (!post) {
       return next(new NotFoundError('Post id does not exist!'));
     }
-    const isOwner = post.createdBy.equals(user?._id);
+    console.log(post.createdBy, user?._id);
+    const isOwner = post.createdBy._id.equals(user?._id);
 
     if (!isOwner) {
       return next(
-        new UnauthorizedError('Not authorized to take action on this post')
+        new ForbiddenError('Not authorized to take action on this post')
       );
     }
     next();

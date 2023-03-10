@@ -37,8 +37,22 @@ const createPost = async ({
 
 const getPostList = async (): Promise<IPost[]> => {
   const posts = await Posts.find({ status: { $nin: 'deleted' } })
+    .sort({ createdAt: 'desc' })
     .populate('createdBy', 'name')
-    .populate('comments')
+    .populate({
+      path: 'comments',
+      model: 'comments',
+      populate: {
+        path: 'createdBy',
+        model: 'users',
+        select: 'name',
+      },
+      options: {
+        sort: {
+          createdAt: 'desc',
+        },
+      },
+    })
     .exec();
 
   return posts;
@@ -50,7 +64,15 @@ const getCreatedPostList = async (userId: string): Promise<IPost[]> => {
     createdBy: userId,
   })
     .populate('createdBy', 'name')
-    .populate('comments')
+    .populate({
+      path: 'comments',
+      model: 'comments',
+      populate: {
+        path: 'createdBy',
+        model: 'users',
+        select: 'name',
+      },
+    })
     .exec();
 
   return posts;
@@ -59,7 +81,15 @@ const getCreatedPostList = async (userId: string): Promise<IPost[]> => {
 const getPost = async (postId: string): Promise<IPost> => {
   const post = await Posts.findOne({ _id: postId })
     .populate('createdBy', 'name')
-    .populate('comments')
+    .populate({
+      path: 'comments',
+      model: 'comments',
+      populate: {
+        path: 'createdBy',
+        model: 'users',
+        select: 'name',
+      },
+    })
     .exec();
   if (!post) {
     throw new NotFoundError('Post id not exists!');
@@ -71,12 +101,21 @@ const getPost = async (postId: string): Promise<IPost> => {
 const deletePost = async (postId: string): Promise<void> => {
   const post = await Posts.findOneAndUpdate(
     { _id: postId },
-    { status: 'deleted' }
+    { status: 'deleted', comments: [] }
   )
     .populate('createdBy', 'name')
     .exec();
+
   if (!post) {
     throw new NotFoundError('Post id not exists!');
+  }
+
+  if (post.comments.length > 0) {
+    await Comments.deleteMany({
+      _id: {
+        $in: post.comments,
+      },
+    });
   }
 };
 
