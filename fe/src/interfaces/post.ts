@@ -7,14 +7,16 @@ export interface IPost {
   postType: string;
   images: string[];
   comments: IComment[];
-  likes: string[];
-  createdBy: {
-    _id: string;
-    name: string;
-  };
+  likes: PopulatedUser[];
+  createdBy: PopulatedUser;
   status?: string;
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+export interface PopulatedUser {
+  _id: string;
+  name: string;
 }
 
 export interface CreatePostPayload {
@@ -29,8 +31,9 @@ export interface UpdatePostPayload {
   _id: string;
   title: string;
   location: string;
+  postType: 'lost' | 'found';
   description: string;
-  images: Blob[];
+  images?: Blob[];
 }
 
 export interface LikePostPayload {

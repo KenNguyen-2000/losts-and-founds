@@ -23,6 +23,7 @@ class PostService {
     formData.append('title', title);
     formData.append('location', location);
     formData.append('description', description);
+    formData.append('postType', postType);
 
     images?.forEach((file: Blob) => formData.append('images', file));
     const res = await interceptor.post<IPost>('/posts', formData, {
@@ -56,15 +57,20 @@ class PostService {
     title,
     location,
     description,
+    postType,
     images,
   }: UpdatePostPayload): Promise<AxiosResponse> => {
     console.log('Update Post Service');
+    console.log(description);
     const formData = new FormData();
     formData.append('title', title);
     formData.append('location', location);
     formData.append('description', description);
+    formData.append('postType', postType);
 
-    images?.forEach((file: Blob) => formData.append('files', file));
+    if (images) {
+      images?.forEach((file: Blob) => formData.append('images', file));
+    }
     const res = await interceptor.put(`/posts/${_id}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',

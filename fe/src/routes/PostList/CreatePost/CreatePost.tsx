@@ -21,20 +21,12 @@ const CreatePost = ({ closeModal }: any) => {
       }
     }
 
-    const formData = new FormData();
-    formData.append('title', title.value);
-    formData.append('location', location.value);
-    formData.append('description', description.value);
-    formData.append('postType', postTypeValue.value);
-
-    files.forEach((file: Blob) => formData.append('images', file));
-
     dispatch(
       postActions.createPost({
         title: title.value,
         location: location.value,
         description: description.value,
-        postType: postType.value,
+        postType: postTypeValue.value,
         images: files,
       })
     );
@@ -146,7 +138,7 @@ const CreatePost = ({ closeModal }: any) => {
                     id='category-lost'
                     name='postType'
                     type='radio'
-                    value='Lost'
+                    value='lost'
                     defaultChecked
                     className='h-4 w-4 border-gray-300 text-amber-500 focus:ring-amber-500 cursor-pointer'
                   />
@@ -162,7 +154,7 @@ const CreatePost = ({ closeModal }: any) => {
                     id='category-found'
                     name='postType'
                     type='radio'
-                    value='Found'
+                    value='found'
                     className='h-4 w-4 border-gray-300 text-amber-500 focus:ring-amber-500 cursor-pointer'
                   />
                   <label

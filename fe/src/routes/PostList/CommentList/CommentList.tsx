@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import logo from '../../../assets/images/logo.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { solid } from '@fortawesome/fontawesome-svg-core/import.macro';
@@ -15,7 +15,7 @@ interface ICommentList {
 const CommentList = ({ postId, comments }: ICommentList) => {
   const dispatch = useAppDispatch();
   const [shownComments, setShownComments] = useState<IComment[]>(
-    comments.slice(0, comments.length > 3 ? 3 : comments.length)
+    comments.slice(0, 3)
   );
 
   const [manageMenuOpen, setManageMenuOpen] = useState('');
@@ -43,13 +43,16 @@ const CommentList = ({ postId, comments }: ICommentList) => {
 
   return (
     <section className='commentList__wrapper w-full flex flex-col gap-1 mt-1 mb-2'>
-      <div className='min-h-[32px] text-sm font-semibold flex items-center '>
-        <button type='button' onClick={showMoreComment}>
-          More comments
-        </button>
-      </div>
+      {comments.length > 3 ? (
+        <div className='min-h-[32px] text-sm font-semibold flex items-center '>
+          <button type='button' onClick={showMoreComment}>
+            More comments
+          </button>
+        </div>
+      ) : null}
+
       <ul className='flex flex-col gap-1'>
-        {shownComments.map((comment: IComment) => (
+        {comments.map((comment: IComment) => (
           <li className='w-full flex items-start  gap-2' key={comment._id}>
             <div className='w-8 h-8 bg-white border border-gray-200 rounded-full overflow-hidden shadow-xs'>
               <img
@@ -93,14 +96,14 @@ const CommentList = ({ postId, comments }: ICommentList) => {
       </ul>
       <div className='w-full flex gap-1 items-center mt-1'>
         <label
-          htmlFor='comment'
+          htmlFor={`comment_${postId}`}
           className='w-8 h-8 bg-white border border-gray-200 rounded-full overflow-hidden shadow-xs'
         >
           <img className='w-full h-auto object-cover' src={logo} alt='avatar' />
         </label>
         <input
           type='text'
-          id='comment'
+          id={`comment_${postId}`}
           name='comment'
           placeholder='Comment something...'
           className='flex-grow rounded-full border-none px-3 py-2 bg-slate-200 text-sm  focus:ring-0'

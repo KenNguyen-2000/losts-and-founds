@@ -16,12 +16,16 @@ interceptor.interceptors.request.use(function (req) {
 interceptor.interceptors.response.use(
   function (res) {
     console.log('Interceptor', res);
-    if (res.status === 401) {
-      window.location.assign('/login');
-    }
+
     return res;
   },
   function (error: AxiosError) {
+    console.log('Interceptor');
+    console.log(error);
+    if (error?.response!.status === 401) {
+      localStorage.clear();
+      window.location.assign('/login');
+    }
     return Promise.reject(error.response);
   }
 );
