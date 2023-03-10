@@ -49,6 +49,7 @@ export const authActions = authSlice.actions;
 
 export const selectAuthLoading = (state: RootState) => state.auth.loading;
 export const selectAuthLoggedIn = (state: RootState) => state.auth.isLoggedIn;
+export const selectUserInfo = (state: RootState) => state.auth.userInfo;
 
 const authReducer = authSlice.reducer;
 export default authReducer;

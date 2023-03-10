@@ -13,6 +13,12 @@ class AuthService {
     const res = await interceptor.post('/users/login', { username, password });
     return res;
   };
+
+  getUserInfo = async (): Promise<AxiosResponse> => {
+    console.log('Get user info service');
+    const res = await interceptor.get('/users');
+    return res;
+  };
 }
 
 const authService = new AuthService();

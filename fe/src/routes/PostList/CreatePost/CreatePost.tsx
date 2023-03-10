@@ -52,8 +52,8 @@ const CreatePost = ({ closeModal }: any) => {
   };
 
   return (
-    <div className='fixed inset-0 backdrop-brightness-90 flex items-center justify-center z-50'>
-      <div className='min-w-[500px] max-w-[700px] bg-white rounded-lg flex flex-col'>
+    <div className='fixed inset-0 py-5 backdrop-brightness-90 flex items-center justify-center z-50'>
+      <div className='min-w-[500px] md:w-[600px] lg:w-[700px] bg-white rounded-lg flex flex-col'>
         <div className='w-full text-center py-4 relative'>
           <h1 className='text-lg font-semibold'>Create Post</h1>
           <FontAwesomeIcon
@@ -120,25 +120,34 @@ const CreatePost = ({ closeModal }: any) => {
               >
                 Description
               </label>
-              <input
+              <textarea
+                id='description'
+                name='description'
+                rows={3}
+                className='mt-2 block w-full rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:py-1.5 sm:text-sm sm:leading-6'
+                placeholder='Describe the stuff'
+              ></textarea>
+
+              {/* <input
                 type='text'
                 name='description'
                 id='description'
                 autoComplete='email'
                 className='mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6'
-              />
+              /> */}
             </div>
             <fieldset>
               <legend className='block text-sm font-medium leading-6 text-gray-900'>
                 Type of Post:
               </legend>
-              <div className='mt-4 space-y-4'>
+              <div className='mt-2 flex gap-10'>
                 <div className='flex items-center '>
                   <input
                     id='category-lost'
                     name='postType'
                     type='radio'
                     value='Lost'
+                    defaultChecked
                     className='h-4 w-4 border-gray-300 text-amber-500 focus:ring-amber-500 cursor-pointer'
                   />
                   <label

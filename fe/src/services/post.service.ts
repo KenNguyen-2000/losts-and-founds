@@ -34,7 +34,7 @@ class PostService {
   };
 
   getPostList = async (): Promise<AxiosResponse> => {
-    console.log('Post Service');
+    console.log('Get post list Service');
     const res = await interceptor.get('/posts');
     return res;
   };

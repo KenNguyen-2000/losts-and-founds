@@ -120,7 +120,7 @@ const postSlice = createSlice({
     },
 
     commentPost(state, action: PayloadAction<CommentPostPayload>) {
-      state.loading = true;
+      // state.loading = true;
     },
 
     commentPostSuccess(state, action: PayloadAction<ICommentResponse>) {
@@ -137,11 +137,11 @@ const postSlice = createSlice({
           return post;
         }
       });
-      state.loading = false;
+      // state.loading = false;
     },
     commentPostFailed(state, action: PayloadAction<string>) {
       state.error = action.payload;
-      state.loading = false;
+      // state.loading = false;
     },
   },
 });

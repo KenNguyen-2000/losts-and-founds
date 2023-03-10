@@ -4,12 +4,14 @@ import { useDispatch, TypedUseSelectorHook, useSelector } from 'react-redux';
 import createSagaMiddleware from '@redux-saga/core';
 import { rootSaga } from './root.saga';
 import postReducer from './post/postSlice';
+import userReducer from './user/userSlice';
 
 const sagaMiddleware = createSagaMiddleware();
 
 const reducers = combineReducers({
   auth: authReducer,
   posts: postReducer,
+  user: userReducer,
 });
 
 export const store = configureStore({

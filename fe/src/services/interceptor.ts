@@ -16,6 +16,9 @@ interceptor.interceptors.request.use(function (req) {
 interceptor.interceptors.response.use(
   function (res) {
     console.log('Interceptor', res);
+    if (res.status === 401) {
+      window.location.assign('/login');
+    }
     return res;
   },
   function (error: AxiosError) {

@@ -14,6 +14,9 @@ interface ICommentList {
 
 const CommentList = ({ postId, comments }: ICommentList) => {
   const dispatch = useAppDispatch();
+  const [shownComments, setShownComments] = useState<IComment[]>(
+    comments.slice(0, comments.length > 3 ? 3 : comments.length)
+  );
 
   const [manageMenuOpen, setManageMenuOpen] = useState('');
 
@@ -22,16 +25,31 @@ const CommentList = ({ postId, comments }: ICommentList) => {
       dispatch(
         postActions.commentPost({ postId, description: event.target.value })
       );
+      event.target.value = '';
     }
   };
 
+  const showMoreComment = () => {
+    if (!(showMoreComment.length >= comments.length)) {
+      const appendComments = comments.slice(
+        shownComments.length,
+        shownComments.length + 3
+      );
+      setShownComments((prev) => prev.concat(appendComments));
+    }
+  };
+
+  console.log('Render from comment list', comments);
+
   return (
     <section className='commentList__wrapper w-full flex flex-col gap-1 mt-1 mb-2'>
-      <div className='min-h-[32px] text-sm font-semibold flex items-center'>
-        <span>More comments</span>
+      <div className='min-h-[32px] text-sm font-semibold flex items-center '>
+        <button type='button' onClick={showMoreComment}>
+          More comments
+        </button>
       </div>
       <ul className='flex flex-col gap-1'>
-        {comments.map((comment: IComment) => (
+        {shownComments.map((comment: IComment) => (
           <li className='w-full flex items-start  gap-2' key={comment._id}>
             <div className='w-8 h-8 bg-white border border-gray-200 rounded-full overflow-hidden shadow-xs'>
               <img

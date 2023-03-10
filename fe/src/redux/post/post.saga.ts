@@ -10,7 +10,7 @@ import commentService from '../../services/comment.service';
 
 function* getPostList() {
   try {
-    console.log('saga');
+    console.log('Get Post List Saga');
     const res: AxiosResponse = yield call(postService.getPostList);
     const { status, data } = res;
     console.log(data);

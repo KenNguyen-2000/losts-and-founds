@@ -6,32 +6,36 @@ import './Profile.style.scss';
 import logo from '../../assets/images/logo.png';
 import interceptor from '../../services/interceptor';
 import { IUser } from '../../interfaces/user';
+import { useAppDispatch, useAppSelector } from '../../redux/store';
+import { selectUserInfo, userActions } from '../../redux/user/userSlice';
 
 const Profile = () => {
+  const dispatch = useAppDispatch();
+
+  const userInfo = useAppSelector(selectUserInfo);
+
   const date: Date = new Date(2000, 9, 29);
-  const [userData, setUserData] = useState<IUser>();
+  const [imgSrc, setImgSrc] = useState<any>();
+  const [isChanged, setIsChanged] = useState(false);
+
+  const handleFileChange = async (event: any) => {
+    const reader = new FileReader();
+    const file = event.target.files[0];
+    // const blob = new Blob(file);
+    reader.readAsDataURL(file);
+    reader.onloadend = () => {
+      setImgSrc(reader.result);
+    };
+    setIsChanged(true);
+  };
+
+  const handleUpdateProfile = (event: any) => {
+    event.preventDefault();
+    console.log(event.target['avatarUrl'].value);
+  };
 
   useEffect(() => {
-    const data = async () => {
-      try {
-        const res = await interceptor.get('/users', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        });
-        if (res.status === 200) {
-          setUserData({
-            ...res.data.user,
-            dob: new Date(res.data.user.dob),
-          });
-        } else {
-          //   console.log(res.data.error);
-        }
-      } catch (error: any) {
-        console.log(error);
-      }
-    };
-    data();
+    dispatch(userActions.getUserInfo());
   }, []);
 
   return (
@@ -53,24 +57,45 @@ const Profile = () => {
             </li>
           </ul>
         </div>
-        <div className='flex-grow flex flex-col px-12 py-10'>
+        <form
+          onSubmit={handleUpdateProfile}
+          className='flex-grow flex flex-col px-12 py-10'
+        >
           <div className='overflow-hidden max-w-[900px] bg-white shadow sm:rounded-lg'>
-            <div className='px-4 py-5 sm:px-6 flex items-center gap-4'>
-              <div className='w-12 h-12 rounded-full border border-gray-200'>
-                <img
-                  alt='avatar'
-                  src={logo}
-                  className='w-full h-full object-contain rounded-full'
-                />
+            <div className='px-4 pr-6 sm:pr-8 py-5 sm:px-6 flex items-center justify-between gap-4'>
+              <div className='flex gap-4 items-center'>
+                <label
+                  htmlFor='avatarUrl'
+                  className='w-16 h-16 rounded-full border border-gray-200 relative'
+                >
+                  <img
+                    alt='avatar'
+                    src={imgSrc || logo}
+                    className='w-full h-full object-contain rounded-full cursor-pointer'
+                  />
+                  <input
+                    id='avatarUrl'
+                    name='avatarUrl'
+                    type='file'
+                    className='hidden'
+                    accept='image/png, image/jpeg'
+                    onChange={handleFileChange}
+                  />
+                </label>
+                <div>
+                  <h3 className='text-base font-semibold leading-6 text-gray-900'>
+                    {userInfo?.name}
+                  </h3>
+                  <p className='mt-1 max-w-2xl text-sm text-gray-500'>
+                    @ngkien299
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className='text-base font-semibold leading-6 text-gray-900'>
-                  Nguyen Kien
-                </h3>
-                <p className='mt-1 max-w-2xl text-sm text-gray-500'>
-                  @ngkien299
-                </p>
-              </div>
+              <FontAwesomeIcon
+                icon={solid('pen')}
+                className='cursor-pointer'
+                onClick={() => setIsChanged(true)}
+              />
             </div>
             <div className='border-t border-gray-200'>
               <dl>
@@ -80,14 +105,21 @@ const Profile = () => {
                       Full name
                     </label>
                   </dt>
-                  <dd className='mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0'>
+                  <dd
+                    className={`mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 pr-2 flex justify-between items-center cursor-pointer  ${
+                      isChanged ? '' : 'hover:bg-gray-100'
+                    }`}
+                  >
                     <input
                       type='text'
                       name='name'
                       id='name'
-                      value={userData ? userData.name : 'Margot Foster'}
-                      className='w-full p-0 border-none bg-inherit focus:right-0 focus:outline-none cursor-default'
-                      readOnly
+                      defaultValue={userInfo?.name}
+                      className={`w-full py-1.5 border-0 rounded-md  bg-inherit ${
+                        !isChanged
+                          ? 'focus:ring-0 focus:outline-none cursor-pointer border-none pointer-events-none'
+                          : 'ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-amber-500'
+                      }`}
                     />
                   </dd>
                 </div>
@@ -97,14 +129,21 @@ const Profile = () => {
                       Username
                     </label>
                   </dt>
-                  <dd className='mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0'>
+                  <dd
+                    className={`mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 pr-2 flex justify-between items-center cursor-pointer  ${
+                      isChanged ? '' : 'hover:bg-gray-100'
+                    }`}
+                  >
                     <input
                       type='text'
                       name='username'
                       id='username'
-                      value={userData ? userData.username : 'Backend Developer'}
-                      className='w-full p-0 border-none bg-inherit focus:right-0 focus:outline-none cursor-default'
-                      readOnly
+                      defaultValue={userInfo?.username}
+                      className={`w-full py-1.5 border-0 rounded-md  bg-inherit ${
+                        !isChanged
+                          ? 'focus:ring-0 focus:outline-none cursor-pointer border-none pointer-events-none'
+                          : 'ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-amber-500'
+                      }`}
                     />
                   </dd>
                 </div>
@@ -114,13 +153,17 @@ const Profile = () => {
                       Password
                     </label>
                   </dt>
-                  <dd className='mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0'>
+                  <dd
+                    className={`mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 pr-2 flex justify-between items-center cursor-pointer  ${
+                      isChanged ? '' : 'hover:bg-gray-100'
+                    }`}
+                  >
                     <input
                       type='password'
                       name='password'
                       id='password'
-                      value='12345678'
-                      className='w-full border-none p-0 bg-inherit focus:ring-0 focus:outline-none focus:border-none cursor-default'
+                      defaultValue='12345678'
+                      className={`w-full py-1.5 border-0 rounded-md  bg-inherit focus:ring-0 focus:outline-none cursor-pointer border-none pointer-events-none`}
                       readOnly
                     />
                   </dd>
@@ -131,14 +174,21 @@ const Profile = () => {
                       Email address
                     </label>
                   </dt>
-                  <dd className='mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0'>
+                  <dd
+                    className={`mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 pr-2 flex justify-between items-center cursor-pointer  ${
+                      isChanged ? '' : 'hover:bg-gray-100'
+                    }`}
+                  >
                     <input
                       type='text'
                       id='email'
                       name='email'
-                      value='margotfoster@example.com'
-                      className='w-full  border-none p-0 bg-inherit focus:ring-0 focus:outline-none focus:border-none cursor-default'
-                      readOnly
+                      defaultValue='margotfoster@example.com'
+                      className={`w-full py-1.5 border-0 rounded-md  bg-inherit ${
+                        !isChanged
+                          ? 'focus:ring-0 focus:outline-none cursor-pointer border-none pointer-events-none'
+                          : 'ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-amber-500'
+                      }`}
                     />
                   </dd>
                 </div>
@@ -148,14 +198,21 @@ const Profile = () => {
                       Phone Number
                     </label>
                   </dt>
-                  <dd className='mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0'>
+                  <dd
+                    className={`mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 pr-2 flex justify-between items-center cursor-pointer  ${
+                      isChanged ? '' : 'hover:bg-gray-100'
+                    }`}
+                  >
                     <input
                       type='text'
                       id='phoneNumber'
                       name='phoneNumber'
-                      value={userData ? userData.phoneNumber : '+84 0818000299'}
-                      className='w-full  border-none p-0 bg-inherit focus:ring-0 focus:outline-none focus:border-none cursor-default'
-                      readOnly
+                      defaultValue={userInfo?.phoneNumber}
+                      className={`w-full py-1.5 border-0 rounded-md  bg-inherit ${
+                        !isChanged
+                          ? 'focus:ring-0 focus:outline-none cursor-pointer border-none pointer-events-none'
+                          : 'ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-amber-500'
+                      }`}
                     />
                   </dd>
                 </div>
@@ -163,20 +220,21 @@ const Profile = () => {
                   <dt className='text-sm font-medium text-gray-500'>
                     Date of birth
                   </dt>
-                  <dd className='mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0'>
+                  <dd
+                    className={`mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 pr-2 flex justify-between items-center cursor-pointer  ${
+                      isChanged ? '' : 'hover:bg-gray-100'
+                    }`}
+                  >
                     <input
                       type='text'
                       id='dob'
                       name='dob'
-                      value={
-                        userData
-                          ? `${userData.dob.getDate()}/${
-                              userData.dob.getMonth() + 1
-                            }/${userData.dob.getFullYear()}`
-                          : `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`
-                      }
-                      className='w-full  border-none p-0 bg-inherit focus:ring-0 focus:outline-none focus:border-none cursor-default'
-                      readOnly
+                      defaultValue={userInfo?.dob.split('T')[0]}
+                      className={`w-full py-1.5 border-0 rounded-md  bg-inherit ${
+                        !isChanged
+                          ? 'focus:ring-0 focus:outline-none cursor-pointer border-none pointer-events-none'
+                          : 'ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-amber-500'
+                      }`}
                     />
                   </dd>
                 </div>
@@ -261,7 +319,17 @@ const Profile = () => {
               </dl>
             </div>
           </div>
-        </div>
+          {isChanged && (
+            <div className='max-w-[900px] flex justify-end'>
+              <button
+                type='submit'
+                className='w-fit self-end mt-2 rounded-md bg-amber-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-amber-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500'
+              >
+                Save
+              </button>
+            </div>
+          )}
+        </form>
       </div>
     </div>
   );

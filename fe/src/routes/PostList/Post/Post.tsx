@@ -39,6 +39,7 @@ const Post = ({
   const handleDeletePost = () => {
     dispatch(postActions.deletePost(_id));
   };
+  console.log('render from Post');
 
   return (
     <>
