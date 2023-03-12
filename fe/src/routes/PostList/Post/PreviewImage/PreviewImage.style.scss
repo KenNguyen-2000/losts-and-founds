@@ -20,13 +20,14 @@
   }
 
   svg {
-    &:first-of-type:hover {
-      path {
-        fill: #d1d5db;
-      }
-    }
     path {
       fill: #e5e7eb;
+    }
+  }
+
+  .previewImage__close-icon:hover {
+    path {
+      fill: #d1d5db;
     }
   }
 }

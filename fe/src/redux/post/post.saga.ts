@@ -1,25 +1,64 @@
-import { LikePostPayload } from './../../interfaces/post';
+import {
+  IGetMorePost,
+  LikePostPayload,
+  IPagingOpts,
+} from './../../interfaces/post';
 import { CreatePostPayload, UpdatePostPayload } from './../../interfaces/post';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { AxiosResponse } from 'axios';
 import { put, takeEvery, takeLatest, call, delay } from 'redux-saga/effects';
 import postService from '../../services/post.service';
 import { postActions } from './postSlice';
-import { CommentPostPayload } from '../../interfaces/comment';
+import {
+  CommentPostPayload,
+  DeleteCommentPayload,
+  EditCommentPayload,
+} from '../../interfaces/comment';
 import commentService from '../../services/comment.service';
 
-function* getPostList() {
+function* getPostList(action: PayloadAction<IPagingOpts>) {
   try {
     console.log('Get Post List Saga');
-    const res: AxiosResponse = yield call(postService.getPostList);
+    const res: AxiosResponse = yield call(
+      postService.getPostList,
+      action.payload
+    );
     const { status, data } = res;
     console.log(data);
     if (status === 200) {
       yield delay(1000);
-      yield put(postActions.getPostListSuccess(data.posts));
+      yield put(
+        postActions.getPostListSuccess({
+          posts: data.posts,
+          hasMore: data.hasMore,
+        })
+      );
     }
   } catch (error: any) {
     yield put(postActions.getPostListFailed(error.message)); // Dispatch action
+  }
+}
+
+function* getPostsBySearch(action: PayloadAction<string>) {
+  try {
+    console.log('Get Post List Saga');
+    const res: AxiosResponse = yield call(
+      postService.getPostsBySearch,
+      action.payload
+    );
+    const { status, data } = res;
+    console.log(data);
+    if (status === 200) {
+      yield delay(1000);
+      yield put(
+        postActions.getPostsBySearchSuccess({
+          posts: data.posts,
+          hasMore: data.hasMore,
+        })
+      );
+    }
+  } catch (error: any) {
+    yield put(postActions.getPostsBySearchFailed(error.message)); // Dispatch action
   }
 }
 
@@ -114,6 +153,54 @@ function* commentPost(action: PayloadAction<CommentPostPayload>) {
   }
 }
 
+function* editCommentPost(action: PayloadAction<EditCommentPayload>) {
+  try {
+    console.log('Edit comment Saga:');
+    const res: AxiosResponse = yield call(
+      commentService.editComment,
+      action.payload
+    );
+    const { status, data } = res;
+    if (status === 201) {
+      console.log(data);
+      yield put(
+        postActions.editCommentPostSuccess({
+          postId: action.payload.postId,
+          ...data.comment,
+        })
+      );
+    } else {
+      yield put(postActions.editCommentPostFailed('Something went wrong')); // Dispatch action
+    }
+  } catch (error: any) {
+    yield put(postActions.editCommentPostFailed(error.data.error.message)); // Dispatch action
+  }
+}
+
+function* deleteCommentPost(action: PayloadAction<DeleteCommentPayload>) {
+  try {
+    console.log('Delete comment Saga:');
+    const res: AxiosResponse = yield call(
+      commentService.deleteComment,
+      action.payload
+    );
+    const { status, data } = res;
+    if (status === 201) {
+      console.log(data);
+      yield put(
+        postActions.commentPostSuccess({
+          postId: action.payload.postId,
+          ...data.comment,
+        })
+      );
+    } else {
+      yield put(postActions.deleteCommentPostFailed('Something went wrong')); // Dispatch action
+    }
+  } catch (error: any) {
+    yield put(postActions.deleteCommentPostFailed(error.message)); // Dispatch action
+  }
+}
+
 function* likePost(action: PayloadAction<LikePostPayload>) {
   try {
     console.log('Update Post Saga:');
@@ -138,4 +225,7 @@ export function* postSaga() {
   yield takeLatest(postActions.updatePost.type, updatePost);
   yield takeLatest(postActions.likePost.type, likePost);
   yield takeLatest(postActions.commentPost.type, commentPost);
+  yield takeLatest(postActions.deleteCommentPost.type, deleteCommentPost);
+  yield takeLatest(postActions.editCommentPost.type, editCommentPost);
+  yield takeLatest(postActions.getPostsBySearch.type, getPostsBySearch);
 }

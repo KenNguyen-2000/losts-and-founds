@@ -4,14 +4,24 @@ import { useAppDispatch } from '../../redux/store';
 import './style.scss';
 import { authActions } from '../../redux/auth/auth.slice';
 import { useNavigate } from 'react-router';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { regular, solid } from '@fortawesome/fontawesome-svg-core/import.macro';
+import { postActions } from '../../redux/post/postSlice';
 
 const Navbar = () => {
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
+  const [search, setSearch] = useState('');
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     await dispatch(authActions.logout());
+  };
+
+  const onSearch = (event: any) => {
+    if (event.keyCode === 13) {
+      dispatch(postActions.getPostsBySearch(search));
+    }
   };
 
   return (
@@ -24,6 +34,22 @@ const Navbar = () => {
         <h2 className='logo__title whitespace-nowrap text-lg font-bold'>
           Lost and Found
         </h2>
+      </div>
+      <div
+        id='searchTerm__outer'
+        className='w-full md:w-[360px] flex gap-4 px-4 py-2 items-center border-2 border-gray-300 rounded-lg'
+      >
+        <FontAwesomeIcon icon={solid('search')} />
+        <input
+          id='searchTerm'
+          name='searchTerm'
+          type='text'
+          placeholder='Search....'
+          className='w-full p-0 border-none focus:ring-0 placeholder:italic font-medium'
+          onChange={(event) => setSearch(event.target.value)}
+          value={search}
+          onKeyDown={onSearch}
+        />
       </div>
       <div className='flex gap-2'>
         <div className='rounded-full border border-slate-300 h-8 w-8 relative'>

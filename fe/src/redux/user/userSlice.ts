@@ -1,6 +1,7 @@
 import { RootState } from './../store';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { IUser } from '../../interfaces/user';
+import jwtDecode from 'jwt-decode';
 
 interface UserState {
   userInfo?: IUser;

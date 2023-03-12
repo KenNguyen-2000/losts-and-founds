@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Navbar } from '../../components';
 import { IPost } from '../../interfaces/post';
 import {
   postActions,
+  selectLoading,
+  selectPagingPosts,
   selectPosts,
+  selectPostsHasMore,
   selectPostsLoading,
 } from '../../redux/post/postSlice';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
@@ -15,11 +18,21 @@ const PostList = () => {
   const dispatch = useAppDispatch();
   const posts = useAppSelector(selectPosts);
   const isLoading = useAppSelector(selectPostsLoading);
+  const loading = useAppSelector(selectLoading);
+  const { hasMore, pageNo, pageSize } = useAppSelector(selectPagingPosts);
+
+  const [page, setPage] = useState(0);
+
   const [selectedPost, setSelectedPost] = useState<IPost | undefined>(
     undefined
   );
   const [filter, setFilter] = useState('');
   const [isShow, setIsShow] = useState(false);
+
+  const elementRef = useRef(null);
+
+  const getAction = () =>
+    dispatch(postActions.getPostList({ pageNo: page, pageSize }));
 
   const handleFilterChange = (event: any) => {
     if (event.target.checked) {
@@ -27,10 +40,35 @@ const PostList = () => {
     }
   };
 
+  const handleGetLostsPostList = async () => {
+    await dispatch(postActions.getPostList({ pageNo: page, pageSize }));
+  };
+
+  const handleGetFoundsPostList = async () => {
+    await getAction();
+  };
+
+  const onIntersection = (entries: any) => {
+    const firstEntry = entries[0];
+    if (firstEntry.isIntersecting && hasMore) {
+      getAction();
+      setPage((prev) => prev + 1);
+    }
+  };
+
   useEffect(() => {
-    dispatch(postActions.getPostList());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const observer = new IntersectionObserver(onIntersection);
+
+    if (observer && elementRef.current) {
+      observer.observe(elementRef.current);
+    }
+
+    return () => {
+      if (observer) {
+        observer.disconnect();
+      }
+    };
+  }, [pageNo]);
 
   console.log('Render from Post List');
 
@@ -124,7 +162,7 @@ const PostList = () => {
             </div>
           </fieldset>
         </div>
-        <div className='flex-grow flex flex-col items-center w-full md:max-w-[700px] lg:max-w-[800px] py-4 gap-4'>
+        <div className='flex-grow flex flex-col items-center w-full md:max-w-[700px] lg:max-w-[800px] py-4 gap-2'>
           <div
             className='w-full  rounded-lg bg-white px-4 py-2 flex  items-center gap-4'
             onClick={() => setIsShow(true)}
@@ -136,15 +174,60 @@ const PostList = () => {
               Write something about your stuff
             </span>
           </div>
-          {isLoading
-            ? 'Fetching posts'
-            : posts?.map((post: IPost) => (
-                <Post
-                  key={post._id}
-                  setSelectedPost={() => setSelectedPost(post)}
-                  {...post}
-                />
-              ))}
+
+          <div className='w-full flex gap-1'>
+            <button
+              className='w-full text-center py-2 bg-white rounded-md border border-gray-300'
+              onClick={handleGetLostsPostList}
+            >
+              Lost
+            </button>
+            <button
+              className='w-full text-center py-2 bg-white rounded-md border border-gray-300'
+              onClick={handleGetFoundsPostList}
+            >
+              Found
+            </button>
+          </div>
+
+          {!loading &&
+            posts?.map((post: IPost, index: number) => (
+              <Post
+                key={post._id}
+                setSelectedPost={() => setSelectedPost(post)}
+                {...post}
+              />
+            ))}
+          {hasMore && (
+            <div
+              ref={elementRef}
+              className='invisible h-0 w-0 overflow-hidden'
+            ></div>
+          )}
+          {isLoading && (
+            <div className='w-full min-h-[200px] border border-gray-200 shadow rounded-md p-4'>
+              <div className='animate-pulse flex flex-col space-y-4'>
+                <div className='flex gap-2 items-center'>
+                  <div className='rounded-full bg-slate-300 h-10 w-10'></div>
+                  <div className='h-9 flex flex-col justify-between'>
+                    <div className='h-2 w-28 bg-slate-300 rounded'></div>
+                    <div className='h-2 w-12 bg-slate-300 rounded'></div>
+                  </div>
+                </div>
+
+                <div className='flex-1 space-y-6 py-1'>
+                  <div className='h-2 bg-slate-300 rounded'></div>
+                  <div className='space-y-3'>
+                    <div className='grid grid-cols-3 gap-4'>
+                      <div className='h-2 bg-slate-300 rounded col-span-2'></div>
+                      <div className='h-2 bg-slate-300 rounded col-span-1'></div>
+                    </div>
+                    <div className='h-2 bg-slate-300 rounded'></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
         <div className='w-full lg:w-[400px]'></div>
       </div>

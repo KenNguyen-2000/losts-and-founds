@@ -37,7 +37,7 @@ const PreviewImage = ({ imgNum, setClosePreview, images }: IPreviewImage) => {
     >
       <FontAwesomeIcon
         icon={solid('circle-xmark')}
-        className='w-10 h-10 absolute top-2 right-8 z-50 cursor-pointer'
+        className='previewImage__close-icon w-10 h-10 absolute top-2 right-8 z-50 cursor-pointer'
         onClick={setClosePreview}
       />
       {images.length > 1 ? (

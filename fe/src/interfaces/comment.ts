@@ -15,3 +15,14 @@ export interface CommentPostPayload {
   postId: string;
   description: string;
 }
+
+export interface DeleteCommentPayload {
+  commentId: string;
+  postId: string;
+}
+
+export interface EditCommentPayload {
+  postId: string;
+  commentId: string;
+  description: string;
+}

@@ -5,13 +5,18 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { solid, regular } from '@fortawesome/fontawesome-svg-core/import.macro';
 import CommentList from '../CommentList/CommentList';
 import { IPost } from '../../../interfaces/post';
-import { useAppDispatch } from '../../../redux/store';
+import { useAppDispatch, useAppSelector } from '../../../redux/store';
 import { postActions } from '../../../redux/post/postSlice';
 import PreviewImage from './PreviewImage/PreviewImage';
 import { GridImages } from '../../../components';
+import jwt from 'jwt-decode';
+import { selectUserInfo } from '../../../redux/user/userSlice';
+import jwtDecode from 'jwt-decode';
+import ReactTimeAgo from 'react-time-ago';
 
 interface IPostComponent extends IPost {
   setSelectedPost: any;
+  ref?: any;
 }
 
 const Post = ({
@@ -19,7 +24,6 @@ const Post = ({
   description,
   location,
   postType,
-  title,
   comments,
   createdAt,
   createdBy,
@@ -28,9 +32,11 @@ const Post = ({
   status,
   updatedAt,
   setSelectedPost,
+  ref,
 }: IPostComponent) => {
   const dispatch = useAppDispatch();
-  const [imgSrc, setImgSrc] = useState(-1);
+
+  const userId: any = jwtDecode(localStorage.getItem('access_token')!);
 
   const handleLikeBtn = () => {
     let type = 'like';
@@ -48,18 +54,13 @@ const Post = ({
   const handleDeletePost = () => {
     dispatch(postActions.deletePost(_id));
   };
-  console.log('render from Post');
 
   return (
     <>
-      {imgSrc >= 0 ? (
-        <PreviewImage
-          imgNum={imgSrc}
-          images={images}
-          setClosePreview={() => setImgSrc(-1)}
-        />
-      ) : null}
-      <section className='post__wrapper w-full bg-white flex flex-col rounded-lg border border-gray-300 '>
+      <section
+        ref={ref}
+        className='post__wrapper w-full bg-white flex flex-col rounded-lg border border-gray-300 '
+      >
         <header className='post__header w-full px-4 py-2 flex justify-between items-center'>
           <div className='flex gap-2'>
             <img
@@ -68,46 +69,58 @@ const Post = ({
               alt='avatar'
             />
             <div className='flex flex-col justify-between'>
-              <div className='text-sm font-medium'>{createdBy.name}</div>
+              <div className='text-base font-medium'>
+                {createdBy.name}{' '}
+                <span className='text-sm'>
+                  {postType} at {location}
+                </span>
+              </div>
               <div className='text-xs text-gray-400'>
-                {createdAt?.toString()}
+                <ReactTimeAgo
+                  date={new Date(createdAt!)}
+                  locale='en-US'
+                  timeStyle='twitter'
+                  className='text-inherit'
+                />{' '}
+                ago
               </div>
             </div>
           </div>
-          <div className='flex gap-2'>
-            <div
-              className='w-7 h-7 p-1.5 flex items-center justify-center rounded-full hover:bg-slate-300 post__icon'
-              onClick={setSelectedPost}
-            >
-              <FontAwesomeIcon
-                icon={solid('ellipsis')}
-                className=' cursor-pointer w-auto h-full '
-                fill='#000'
-              />
+
+          {userId.id === createdBy._id ? (
+            <div className='flex gap-2'>
+              <div
+                className='w-7 h-7 p-1.5 flex items-center justify-center rounded-full hover:bg-slate-300 post__icon'
+                onClick={setSelectedPost}
+              >
+                <FontAwesomeIcon
+                  icon={solid('ellipsis')}
+                  className=' cursor-pointer w-auto h-full '
+                  fill='#000'
+                />
+              </div>
+
+              <div className='w-7 h-7 p-1.5 flex items-center justify-center rounded-full hover:bg-slate-300 post__icon'>
+                <FontAwesomeIcon
+                  icon={solid('xmark')}
+                  className='w-auto h-full cursor-pointer '
+                  fixedWidth
+                  onClick={handleDeletePost}
+                />
+              </div>
             </div>
-            <div className='w-7 h-7 p-1.5 flex items-center justify-center rounded-full hover:bg-slate-300 post__icon'>
-              <FontAwesomeIcon
-                icon={solid('xmark')}
-                className='w-auto h-full cursor-pointer '
-                fixedWidth
-                onClick={handleDeletePost}
-              />
-            </div>
-          </div>
+          ) : null}
         </header>
         <section className='post__body w-full flex flex-col gap-2'>
           <div className='post__description w-full px-4'>{description}</div>
-          <div
-            className='max-w-full min-w-[500px] px-4 border-t border-b border-gray-200 flex items-center justify-center cursor-pointer'
-            onClick={() => setImgSrc(0)}
-          >
+          <div className='max-w-full min-w-[500px] px-4 border-t border-b border-gray-200 flex items-center justify-center cursor-pointer'>
             {/* <img
               className='post__img w-full h-full object-contain'
               alt='post img'
               crossOrigin='anonymous'
               src={`${process.env.REACT_APP_IMG_URL}/${images[0]}`}
             /> */}
-            <GridImages />
+            <GridImages images={images} />
           </div>
         </section>
         <section className='post__bottom flex flex-col px-4'>

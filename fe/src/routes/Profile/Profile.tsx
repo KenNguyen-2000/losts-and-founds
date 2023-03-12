@@ -13,6 +13,10 @@ const Profile = () => {
   const dispatch = useAppDispatch();
 
   const userInfo = useAppSelector(selectUserInfo);
+  let dob = new Date();
+  if (userInfo?.dob) {
+    dob = new Date(userInfo.dob);
+  }
 
   const date: Date = new Date(2000, 9, 29);
   const [imgSrc, setImgSrc] = useState<any>();
@@ -229,7 +233,7 @@ const Profile = () => {
                       type='text'
                       id='dob'
                       name='dob'
-                      defaultValue={userInfo?.dob.split('T')[0]}
+                      defaultValue={dateFormatter(dob, 'dd/mm/yyyy', '/')}
                       className={`w-full py-1.5 border-0 rounded-md  bg-inherit ${
                         !isChanged
                           ? 'focus:ring-0 focus:outline-none cursor-pointer border-none pointer-events-none'
@@ -333,6 +337,38 @@ const Profile = () => {
       </div>
     </div>
   );
+};
+
+const dateFormatter = (
+  inputDate: Date,
+  format: string,
+  pattern: string
+): string => {
+  const year = inputDate.getFullYear().toString();
+  const month = (inputDate.getMonth() + 1).toString();
+  const date = inputDate.getDate().toString();
+
+  let arrayString: string[] = format.split(pattern);
+
+  for (let i = 0; i < arrayString.length; i++) {
+    switch (arrayString[i].toLocaleLowerCase()) {
+      case 'mm':
+        arrayString[i] = month;
+        break;
+      case 'yyyy':
+        arrayString[i] = year;
+        break;
+      case 'yy':
+        arrayString[i] = year;
+        break;
+      case 'dd':
+        arrayString[i] = date;
+        break;
+      default:
+    }
+  }
+
+  return arrayString.join(pattern);
 };
 
 export default Profile;

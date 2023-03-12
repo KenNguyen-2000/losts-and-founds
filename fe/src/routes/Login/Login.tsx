@@ -1,13 +1,18 @@
 import React, { useEffect } from 'react';
 import loginBanner from '../../assets/images/login-banner.png';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
-import { authActions, selectAuthLoggedIn } from '../../redux/auth/auth.slice';
+import {
+  authActions,
+  selectAuthErr,
+  selectAuthLoggedIn,
+} from '../../redux/auth/auth.slice';
 import { useNavigate } from 'react-router';
 
 const Login = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const isLoggedIn = useAppSelector(selectAuthLoggedIn);
+  const error = useAppSelector(selectAuthErr);
 
   const submitLogin = async (event: any) => {
     event.preventDefault();
@@ -33,6 +38,7 @@ const Login = () => {
 
         <div className='flex-grow flex flex-col items-start justify-center px-14'>
           <div className='w-full flex flex-col gap-1 text-center mb-8'>
+            <p>{error !== null && error}</p>
             <h1 className='text-3xl font-bold tracking-tight text-gray-900'>
               Sign in to your account
             </h1>

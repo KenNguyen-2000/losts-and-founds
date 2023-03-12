@@ -2,6 +2,8 @@ import { AxiosResponse } from 'axios';
 import { CommentPostPayload } from '../interfaces/comment';
 import {
   CreatePostPayload,
+  IGetMorePost,
+  IPagingOpts,
   IPost,
   LikePostPayload,
   UpdatePostPayload,
@@ -12,7 +14,6 @@ class PostService {
   constructor() {}
 
   createPost = async ({
-    title,
     location,
     description,
     postType,
@@ -20,7 +21,6 @@ class PostService {
   }: CreatePostPayload): Promise<AxiosResponse> => {
     console.log('Create Post Service');
     const formData = new FormData();
-    formData.append('title', title);
     formData.append('location', location);
     formData.append('description', description);
     formData.append('postType', postType);
@@ -34,9 +34,29 @@ class PostService {
     return res;
   };
 
-  getPostList = async (): Promise<AxiosResponse> => {
+  getPostList = async ({
+    pageNo,
+    pageSize,
+  }: IPagingOpts): Promise<AxiosResponse> => {
     console.log('Get post list Service');
-    const res = await interceptor.get('/posts');
+    const res = await interceptor.get('/posts', {
+      params: {
+        pageNo: pageNo,
+        pageSize: pageSize,
+      },
+    });
+    return res;
+  };
+
+  getPostsBySearch = async (search: string): Promise<AxiosResponse> => {
+    console.log('Get post list Service');
+    const res = await interceptor.get('/posts', {
+      params: {
+        search: search,
+        pageNo: 0,
+        pageSize: 3,
+      },
+    });
     return res;
   };
 
@@ -54,7 +74,6 @@ class PostService {
 
   updatePost = async ({
     _id,
-    title,
     location,
     description,
     postType,
@@ -63,7 +82,6 @@ class PostService {
     console.log('Update Post Service');
     console.log(description);
     const formData = new FormData();
-    formData.append('title', title);
     formData.append('location', location);
     formData.append('description', description);
     formData.append('postType', postType);

@@ -1,7 +1,6 @@
 import { IComment } from './comment';
 export interface IPost {
   _id: string;
-  title: string;
   location: string;
   description: string;
   postType: string;
@@ -10,8 +9,17 @@ export interface IPost {
   likes: PopulatedUser[];
   createdBy: PopulatedUser;
   status?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface GetPostRes {
+  posts: IPost[];
+  hasMore: boolean;
+}
+
+export interface ISearchPosts extends IPagingOpts {
+  search: string;
 }
 
 export interface PopulatedUser {
@@ -20,7 +28,6 @@ export interface PopulatedUser {
 }
 
 export interface CreatePostPayload {
-  title: string;
   location: string;
   description: string;
   postType: string;
@@ -29,7 +36,6 @@ export interface CreatePostPayload {
 
 export interface UpdatePostPayload {
   _id: string;
-  title: string;
   location: string;
   postType: 'lost' | 'found';
   description: string;
@@ -45,4 +51,14 @@ export interface LikePostRes extends IPost {
   type: string;
 }
 
-export interface GetPostPayload {}
+export interface IGetMorePost {
+  pageNo: number;
+  pageSize: number;
+}
+
+export interface IPagingOpts {
+  pageNo: number;
+  pageSize: number;
+  filter?: string;
+  search?: string;
+}

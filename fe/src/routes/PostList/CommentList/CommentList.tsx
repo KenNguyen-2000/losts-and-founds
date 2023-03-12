@@ -6,6 +6,7 @@ import './CommentList.style.scss';
 import { useAppDispatch } from '../../../redux/store';
 import { postActions } from '../../../redux/post/postSlice';
 import { IComment } from '../../../interfaces/comment';
+import jwtDecode from 'jwt-decode';
 
 interface ICommentList {
   postId: string;
@@ -13,6 +14,8 @@ interface ICommentList {
 }
 
 const CommentList = ({ postId, comments }: ICommentList) => {
+  const user: any = jwtDecode(localStorage.getItem('access_token')!);
+
   const dispatch = useAppDispatch();
   const [shownComments, setShownComments] = useState<IComment[]>(
     comments.slice(0, 3)
@@ -29,6 +32,14 @@ const CommentList = ({ postId, comments }: ICommentList) => {
     }
   };
 
+  const handleOpenManageMenu = (commentId: string) => {
+    if (commentId === manageMenuOpen) {
+      setManageMenuOpen('');
+    } else {
+      setManageMenuOpen(commentId);
+    }
+  };
+
   const showMoreComment = () => {
     if (!(showMoreComment.length >= comments.length)) {
       const appendComments = comments.slice(
@@ -39,7 +50,15 @@ const CommentList = ({ postId, comments }: ICommentList) => {
     }
   };
 
-  console.log('Render from comment list', comments);
+  const handleDeleteComment = (commentId: string) => {
+    dispatch(postActions.deleteCommentPost({ commentId, postId }));
+  };
+
+  const handleEditComment = (commentId: string) => {
+    const exactComment = document.getElementById(`${commentId}__description`);
+    exactComment?.classList.add('bg-slate-200');
+    exactComment?.classList.add('pointer-events-auto');
+  };
 
   return (
     <section className='commentList__wrapper w-full flex flex-col gap-1 mt-1 mb-2'>
@@ -62,34 +81,47 @@ const CommentList = ({ postId, comments }: ICommentList) => {
               />
             </div>
             <div className='flex-grow flex gap-2 '>
-              <div className='commentList-comment-item__wrapper min-h-[40px] w-fit px-3 py-2 flex flex-col gap-1 rounded-md bg-slate-200'>
+              <div className='commentList-comment-item__wrapper min-h-[40px] w-fit px-3 py-2 flex flex-col gap-1 rounded-md bg-slate-200 '>
                 <span className='text-xs font-semibold'>
                   {comment.createdBy.name}
                 </span>
-                <p className='text-sm'>{comment.description}</p>
+                <input
+                  id={`${comment._id}__description`}
+                  type='text'
+                  defaultValue={comment.description}
+                  className='p-0 border-none focus:right-0 pointer-events-none bg-inherit rounded-full text-sm'
+                />
               </div>
-              <div className='flex items-center relative'>
-                <div
-                  className='w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-200 cursor-pointer'
-                  onClick={() => setManageMenuOpen(comment._id)}
-                >
-                  <FontAwesomeIcon
-                    icon={solid('ellipsis')}
-                    className='commentList-comment-item__icon w-4 h-4 '
-                    fixedWidth
-                  />
+              {user.id === comment.createdBy._id ? (
+                <div className='flex items-center relative'>
+                  <div
+                    className='w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-200 cursor-pointer'
+                    onClick={handleOpenManageMenu.bind(null, comment._id)}
+                  >
+                    <FontAwesomeIcon
+                      icon={solid('ellipsis')}
+                      className='commentList-comment-item__icon w-4 h-4 '
+                      fixedWidth
+                    />
+                  </div>
+                  {comment._id === manageMenuOpen && (
+                    <ul className='commentList-comment-item__dropdown-menu  p-2 flex flex-col rounded-md z-20'>
+                      <li
+                        className='py-3 px-2 cursor-pointer hover:bg-slate-200 rounded-md'
+                        onClick={handleEditComment.bind(null, comment._id)}
+                      >
+                        Edit
+                      </li>
+                      <li
+                        className='py-3 px-2 cursor-pointer hover:bg-slate-200 rounded-md'
+                        onClick={handleDeleteComment.bind(null, comment._id)}
+                      >
+                        Delete
+                      </li>
+                    </ul>
+                  )}
                 </div>
-                {comment._id === manageMenuOpen && (
-                  <ul className='commentList-comment-item__dropdown-menu  p-2 flex flex-col rounded-md z-20'>
-                    <li className='py-3 px-2 cursor-pointer hover:bg-slate-200 rounded-md'>
-                      Edit
-                    </li>
-                    <li className='py-3 px-2 cursor-pointer hover:bg-slate-200 rounded-md'>
-                      Delete
-                    </li>
-                  </ul>
-                )}
-              </div>
+              ) : null}
             </div>
           </li>
         ))}

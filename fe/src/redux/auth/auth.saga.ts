@@ -16,7 +16,7 @@ import { authActions } from './auth.slice';
 
 function* handleLogin(payload: LoginPayload) {
   try {
-    console.log('saga');
+    console.log('Login Saga');
     const res: AxiosResponse = yield call(
       authService.login,
       payload.username,
@@ -29,7 +29,7 @@ function* handleLogin(payload: LoginPayload) {
       yield put(authActions.loginSuccess(data));
     }
   } catch (error: any) {
-    yield put(authActions.loginFailed(error.message)); // Dispatch action
+    yield put(authActions.loginFailed(error.data.error.message)); // Dispatch action
   }
 }
 
@@ -41,13 +41,14 @@ function* handleLogout() {
 
 function* watchLoginFlow() {
   while (true) {
+    console.log('Watcher');
     const isLoggedIn = Boolean(localStorage.getItem('access_token'));
-    console.log('Watch auth');
     if (!isLoggedIn) {
       const action: PayloadAction<LoginPayload> = yield take(
         authActions.login.type
       );
-      yield fork(handleLogin, action.payload); // Non-blocking
+      console.log(action);
+      yield call(handleLogin, action.payload); // Non-blocking
     }
 
     yield take(authActions.logout.type);
