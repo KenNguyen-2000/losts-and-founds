@@ -9,10 +9,18 @@ import {
   NotFoundError,
   BadRequestError,
 } from '../errors/error';
+import { QueryOpts } from '../interfaces/common/Request';
+
+const INIT_QUERY_FIELDS: QueryOpts = {
+  search: '',
+  sortBy: 'createdAt',
+  pageNo: 0,
+  pageSize: 3,
+};
 
 class PostController {
   async createPost(req: Request, res: Response, next: NextFunction) {
-    const { title, description, location, postType }: IPost = req.body;
+    const { description, location, postType }: IPost = req.body;
     const { user, files } = req;
     try {
       if (!files) {
@@ -25,7 +33,6 @@ class PostController {
         }
       );
       const newPost: IPost = await postService.createPost({
-        title,
         description,
         images,
         postType,
@@ -44,13 +51,90 @@ class PostController {
   }
 
   async getPostList(req: Request, res: Response, next: NextFunction) {
+    const { search, sortBy, pageNo, pageSize }: QueryOpts = req.query;
+    let queryString = '';
+    let queryFields: QueryOpts = INIT_QUERY_FIELDS;
+    if (search) {
+      queryFields.search = search;
+    }
+    if (sortBy) {
+      queryFields.sortBy = sortBy;
+    }
+    if (pageNo) {
+      queryFields.pageNo = pageNo;
+    }
+    if (pageSize) {
+      queryFields.pageSize = pageSize;
+    }
     try {
-      const posts: IPost[] = await postService.getPostList();
+      const posts: IPost[] = await postService.getPostList(queryFields);
 
       if (posts) {
-        res
-          .status(200)
-          .json({ message: 'Get posts list successfully!', posts });
+        res.status(200).json({
+          message: 'Get posts list successfully!',
+          posts,
+          hasMore: posts.length < pageSize! ? false : true,
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getLostsPostList(req: Request, res: Response, next: NextFunction) {
+    const { search, sortBy, pageNo, pageSize }: QueryOpts = req.query;
+
+    let queryFields: QueryOpts = INIT_QUERY_FIELDS;
+    if (search) {
+      queryFields.search = search;
+    }
+    if (sortBy) {
+      queryFields.sortBy = sortBy;
+    }
+    if (pageNo) {
+      queryFields.pageNo = pageNo;
+    }
+    if (pageSize) {
+      queryFields.pageSize = pageSize;
+    }
+    try {
+      const posts: IPost[] = await postService.getLostsPostList(queryFields);
+
+      if (posts) {
+        res.status(200).json({
+          message: 'Get posts list successfully!',
+          posts,
+          hasMore: posts.length < pageSize! ? false : true,
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+  async getFoundsPostList(req: Request, res: Response, next: NextFunction) {
+    const { search, sortBy, pageNo, pageSize }: QueryOpts = req.query;
+    let queryFields: QueryOpts = INIT_QUERY_FIELDS;
+    if (search) {
+      queryFields.search = search;
+    }
+    if (sortBy) {
+      queryFields.sortBy = sortBy;
+    }
+    if (pageNo) {
+      queryFields.pageNo = pageNo;
+    }
+    if (pageSize) {
+      queryFields.pageSize = pageSize;
+    }
+    try {
+      const posts: IPost[] = await postService.getFoundsPostList(queryFields);
+
+      if (posts) {
+        res.status(200).json({
+          message: 'Get posts list successfully!',
+          posts,
+          hasMore: posts.length < pageSize! ? false : true,
+        });
       }
     } catch (error) {
       next(error);
@@ -88,12 +172,11 @@ class PostController {
 
   async updatePost(req: Request, res: Response, next: NextFunction) {
     const { postId } = req.params;
-    const { title, description, location, postType }: IUpdatePost = req.body;
+    const { description, location, postType }: IUpdatePost = req.body;
     const { files } = req;
 
     let updatedFiels: IUpdatePost = {
       _id: postId,
-      title,
       description,
       location,
       postType,

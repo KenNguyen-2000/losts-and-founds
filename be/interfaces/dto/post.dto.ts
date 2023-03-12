@@ -1,7 +1,7 @@
 import { Express } from 'express';
 export interface IUpdatePost {
   _id: string;
-  title: string;
+
   description: string;
   location: string;
   images?: string[];
@@ -15,7 +15,6 @@ export interface ICommentPost {
 }
 
 export interface ICreatePost {
-  title: string;
   location: string;
   description: string;
   postType: string;

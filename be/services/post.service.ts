@@ -1,3 +1,4 @@
+import { QueryOpts } from './../interfaces/common/Request';
 import Posts, { IPost } from './../models/post.model';
 import {
   ICommentPost,
@@ -12,7 +13,6 @@ import {
 } from '../errors/error';
 
 const createPost = async ({
-  title,
   description,
   images,
   createdBy,
@@ -20,7 +20,6 @@ const createPost = async ({
   location,
 }: ICreatePost): Promise<IPost> => {
   const newPost = await Posts.create({
-    title,
     description,
     images,
     location,
@@ -32,12 +31,29 @@ const createPost = async ({
     throw new BadRequestError('Create post unsuccessfully!');
   }
 
-  return newPost;
+  return newPost.populate('createdBy', 'name');
 };
 
-const getPostList = async (): Promise<IPost[]> => {
-  const posts = await Posts.find({ status: { $nin: 'deleted' } })
-    .sort({ createdAt: 'desc' })
+const getPostList = async (queryFields: QueryOpts): Promise<IPost[]> => {
+  const { search, pageNo, pageSize, sortBy }: any = queryFields;
+  const regex = new RegExp(search, 'i');
+  const posts = await Posts.find({
+    status: { $nin: 'deleted' },
+
+    $or: [
+      {
+        location: {
+          $regex: regex,
+        },
+      },
+      {
+        description: {
+          $regex: regex,
+        },
+      },
+    ],
+  })
+    .sort(sortBy)
     .populate('createdBy', 'name')
     .populate({
       path: 'comments',
@@ -54,8 +70,101 @@ const getPostList = async (): Promise<IPost[]> => {
       },
     })
     .populate('likes', 'name')
+    .skip(pageNo * pageSize)
+    .limit(pageSize)
     .exec();
-  console.log(posts);
+
+  return posts;
+};
+
+const getLostsPostList = async (queryFields: QueryOpts): Promise<IPost[]> => {
+  const { search, pageNo, pageSize, sortBy }: any = queryFields;
+  const regex = new RegExp(search, 'i');
+  const posts = await Posts.find({
+    status: { $nin: 'deleted' },
+    postType: 'lost',
+    $or: [
+      {
+        location: {
+          $regex: regex,
+        },
+      },
+      {
+        description: {
+          $regex: regex,
+        },
+      },
+      {
+        postType: {
+          $in: regex,
+        },
+      },
+    ],
+  })
+    .sort(sortBy)
+    .populate('createdBy', 'name')
+    .populate({
+      path: 'comments',
+      model: 'comments',
+      populate: {
+        path: 'createdBy',
+        model: 'users',
+        select: 'name',
+      },
+      options: {
+        sort: {
+          createdAt: 'desc',
+        },
+      },
+    })
+    .populate('likes', 'name')
+    .skip(pageNo * pageSize)
+    .limit(pageSize)
+    .exec();
+
+  return posts;
+};
+
+const getFoundsPostList = async (queryFields: QueryOpts): Promise<IPost[]> => {
+  const { search, pageNo, pageSize, sortBy }: any = queryFields;
+  const regex = new RegExp(search, 'i');
+  const posts = await Posts.find({
+    status: { $nin: 'deleted' },
+    postType: 'found',
+    $or: [
+      {
+        location: {
+          $regex: regex,
+        },
+      },
+      {
+        description: {
+          $regex: regex,
+        },
+      },
+    ],
+  })
+    .sort(sortBy)
+    .populate('createdBy', 'name')
+    .populate({
+      path: 'comments',
+      model: 'comments',
+      populate: {
+        path: 'createdBy',
+        model: 'users',
+        select: 'name',
+      },
+      options: {
+        sort: {
+          createdAt: 'desc',
+        },
+      },
+    })
+    .populate('likes', 'name')
+    .skip(pageNo * pageSize)
+    .limit(pageSize)
+    .exec();
+
   return posts;
 };
 
@@ -218,6 +327,8 @@ const postService = {
   likePost,
   dislikePost,
   commentPost,
+  getLostsPostList,
+  getFoundsPostList,
 };
 
 export default postService;

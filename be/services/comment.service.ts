@@ -1,7 +1,11 @@
 import BadRequestError from '../errors/BadRequest.error';
 import InternalServerError from '../errors/InternalServer.error';
 import NotFoundError from '../errors/NotFound.error';
-import { ICreateComment } from '../interfaces/dto/comment.dto';
+import {
+  ICreateComment,
+  IDeleteComment,
+  IEditComment,
+} from '../interfaces/dto/comment.dto';
 import Comments from '../models/comments.model';
 import Posts from '../models/post.model';
 
@@ -43,6 +47,48 @@ const createComment = async ({
   return newComment;
 };
 
-const commentService = { createComment };
+const editComment = async ({ commentId, description }: IEditComment) => {
+  const isCommentExist = await Comments.findOneAndUpdate(
+    {
+      _id: commentId,
+    },
+    {
+      description: description,
+    }
+  )
+    .populate('createdBy', 'name')
+    .exec();
+
+  if (!isCommentExist) {
+    throw new NotFoundError('Comment not found!');
+  }
+
+  return isCommentExist;
+};
+
+const deleteComment = async ({ commentId, postId }: IDeleteComment) => {
+  const isCommentExist = await Comments.findOneAndDelete({
+    _id: commentId,
+  })
+    .populate('createdBy', 'name')
+    .exec();
+
+  if (!isCommentExist) {
+    throw new NotFoundError('Comment not found!');
+  }
+
+  Posts.findOneAndUpdate(
+    { _id: postId },
+    {
+      comments: {
+        $pull: commentId,
+      },
+    }
+  );
+
+  return isCommentExist;
+};
+
+const commentService = { createComment, editComment, deleteComment };
 
 export default commentService;

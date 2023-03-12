@@ -5,3 +5,13 @@ export interface ICreateComment {
   description: string;
   userId: string;
 }
+
+export interface IEditComment {
+  commentId: string;
+  description: string;
+}
+
+export interface IDeleteComment {
+  commentId: string;
+  postId: string;
+}

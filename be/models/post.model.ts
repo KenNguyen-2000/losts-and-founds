@@ -1,7 +1,6 @@
 import mongoose, { Document, Types } from 'mongoose';
 
 export interface IPost {
-  title: string;
   description: string;
   location: string;
   images: string[];
@@ -16,10 +15,6 @@ export interface IPost {
 
 const postsSchema = new mongoose.Schema<IPost>(
   {
-    title: {
-      type: String,
-      required: true,
-    },
     description: {
       type: String,
       required: true,

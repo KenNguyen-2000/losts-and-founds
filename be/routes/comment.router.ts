@@ -7,5 +7,12 @@ const commentRouter = express.Router();
 commentRouter
   .route('/:postId')
   .post([authMiddleware], commentController.createComment);
+commentRouter
+  .route('/:commentId')
+  .put([authMiddleware], commentController.editComment);
+commentRouter
+  .route('/:postId/:commentId')
+
+  .delete([authMiddleware], commentController.deleteComment);
 
 export default commentRouter;

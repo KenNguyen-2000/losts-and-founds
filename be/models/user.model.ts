@@ -7,6 +7,7 @@ export interface IUser {
   name: string;
   avatarUrl?: string;
   dob: Date;
+  isAdmin?: boolean;
 }
 
 const userSchema = new mongoose.Schema<IUser>(
@@ -37,6 +38,10 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     avatarUrl: {
       type: String,
+    },
+    isAdmin: {
+      type: Boolean,
+      default: false,
     },
   },
   {

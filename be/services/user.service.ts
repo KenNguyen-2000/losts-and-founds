@@ -1,4 +1,8 @@
-import { ILogin } from '../interfaces/user.interface';
+import {
+  IChangePassword,
+  ILogin,
+  IUpdateProfile,
+} from '../interfaces/user.interface';
 import Users, { IUser } from '../models/user.model';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -75,6 +79,32 @@ const getInfo = async (userId: string) => {
   return user;
 };
 
-const userService = { login, register, getInfo };
+const updateProfile = async (updateField: IUpdateProfile) => {};
+
+const changePassword = async ({
+  userId,
+  oldPassword,
+  newPassword,
+}: IChangePassword) => {
+  const user = await Users.findOne({ _id: userId }).exec();
+
+  if (!user) {
+    throw new NotFoundError('User not found!');
+  }
+
+  const isMatched = await bcrypt.compare(oldPassword, user.password);
+
+  if (!isMatched) {
+    throw new BadRequestError('Old password does not match!');
+  }
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  user.password = hashedPassword;
+  await user.save();
+
+  return user;
+};
+
+const userService = { login, register, getInfo, changePassword, updateProfile };
 
 export default userService;
