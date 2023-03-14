@@ -1,18 +1,18 @@
 import mongoose from 'mongoose';
 
 export interface IUser {
-  username: string;
+  email: string;
   password: string;
   phoneNumber?: string;
   name: string;
   avatarUrl?: string;
-  dob: Date;
+  dob?: Date;
   isAdmin?: boolean;
 }
 
 const userSchema = new mongoose.Schema<IUser>(
   {
-    username: {
+    email: {
       type: String,
       unique: true,
       required: true,
@@ -20,7 +20,6 @@ const userSchema = new mongoose.Schema<IUser>(
     phoneNumber: {
       type: String,
       unique: true,
-      required: true,
       min: 9,
       max: 15,
     },
@@ -30,7 +29,6 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     dob: {
       type: Date,
-      required: true,
     },
     name: {
       type: String,

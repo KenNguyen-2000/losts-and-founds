@@ -9,14 +9,7 @@ import {
   NotFoundError,
   BadRequestError,
 } from '../errors/error';
-import { QueryOpts } from '../interfaces/common/Request';
-
-const INIT_QUERY_FIELDS: QueryOpts = {
-  search: '',
-  sortBy: 'createdAt',
-  pageNo: 0,
-  pageSize: 3,
-};
+import { QueryOpts, RequestQueryOpts } from '../interfaces/common/Request';
 
 class PostController {
   async createPost(req: Request, res: Response, next: NextFunction) {
@@ -26,7 +19,7 @@ class PostController {
       if (!files) {
         next(new BadRequestError('At least one image required!'));
       }
-      console.log(files);
+      files;
       const images: string[] = (files as Express.Multer.File[])?.map(
         (file: Express.Multer.File) => {
           return file.filename;
@@ -51,89 +44,37 @@ class PostController {
   }
 
   async getPostList(req: Request, res: Response, next: NextFunction) {
-    const { search, sortBy, pageNo, pageSize }: QueryOpts = req.query;
-    let queryString = '';
-    let queryFields: QueryOpts = INIT_QUERY_FIELDS;
-    if (search) {
-      queryFields.search = search;
-    }
-    if (sortBy) {
-      queryFields.sortBy = sortBy;
-    }
-    if (pageNo) {
-      queryFields.pageNo = pageNo;
-    }
-    if (pageSize) {
-      queryFields.pageSize = pageSize;
-    }
+    const {
+      search = '',
+      pageNo = '0',
+      pageSize = '3',
+      sortBy: sortByParam,
+      postType,
+    }: RequestQueryOpts = req.query;
+
+    const filter = postType ? { postType } : {};
+
+    const sortBy: any = Array.isArray(sortByParam)
+      ? sortByParam.map((sort) => {
+          const [field, direction] = sort.split(':');
+          return [field, -1];
+        })
+      : [];
+
     try {
-      const posts: IPost[] = await postService.getPostList(queryFields);
+      const posts: IPost[] = await postService.getPostList({
+        search,
+        sortBy,
+        pageNo: parseInt(pageNo),
+        pageSize: parseInt(pageSize),
+        filter,
+      });
 
       if (posts) {
         res.status(200).json({
           message: 'Get posts list successfully!',
           posts,
-          hasMore: posts.length < pageSize! ? false : true,
-        });
-      }
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async getLostsPostList(req: Request, res: Response, next: NextFunction) {
-    const { search, sortBy, pageNo, pageSize }: QueryOpts = req.query;
-
-    let queryFields: QueryOpts = INIT_QUERY_FIELDS;
-    if (search) {
-      queryFields.search = search;
-    }
-    if (sortBy) {
-      queryFields.sortBy = sortBy;
-    }
-    if (pageNo) {
-      queryFields.pageNo = pageNo;
-    }
-    if (pageSize) {
-      queryFields.pageSize = pageSize;
-    }
-    try {
-      const posts: IPost[] = await postService.getLostsPostList(queryFields);
-
-      if (posts) {
-        res.status(200).json({
-          message: 'Get posts list successfully!',
-          posts,
-          hasMore: posts.length < pageSize! ? false : true,
-        });
-      }
-    } catch (error) {
-      next(error);
-    }
-  }
-  async getFoundsPostList(req: Request, res: Response, next: NextFunction) {
-    const { search, sortBy, pageNo, pageSize }: QueryOpts = req.query;
-    let queryFields: QueryOpts = INIT_QUERY_FIELDS;
-    if (search) {
-      queryFields.search = search;
-    }
-    if (sortBy) {
-      queryFields.sortBy = sortBy;
-    }
-    if (pageNo) {
-      queryFields.pageNo = pageNo;
-    }
-    if (pageSize) {
-      queryFields.pageSize = pageSize;
-    }
-    try {
-      const posts: IPost[] = await postService.getFoundsPostList(queryFields);
-
-      if (posts) {
-        res.status(200).json({
-          message: 'Get posts list successfully!',
-          posts,
-          hasMore: posts.length < pageSize! ? false : true,
+          hasMore: posts.length === 0 ? false : true,
         });
       }
     } catch (error) {
@@ -205,7 +146,6 @@ class PostController {
 
   async deletePost(req: Request, res: Response, next: NextFunction) {
     const { postId } = req.params;
-    console.log('Delete post controller');
     try {
       await postService.deletePost(postId);
       res.status(200).json({ message: 'Delete post successfully!' });
@@ -255,7 +195,7 @@ class PostController {
     const { postId } = req.params;
     const { description } = req.body;
     const { user } = req;
-    console.log(description);
+    description;
 
     try {
       const updatedPost = await postService.commentPost({

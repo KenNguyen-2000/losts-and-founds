@@ -11,6 +11,7 @@ import errorHandler from './middleware/errorHandler.middleware';
 import postRouter from './routes/post.router';
 import path from 'path';
 import commentRouter from './routes/comment.router';
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
@@ -25,10 +26,11 @@ connection
   .then((db) => {
     console.log('Mongoose is connected!');
   })
-  .catch((err) => console.log(err));
+  .catch((err) => err);
 
 app.use(cors());
 app.use(helmet());
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(morgan('dev'));

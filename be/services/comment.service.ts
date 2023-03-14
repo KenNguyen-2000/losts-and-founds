@@ -42,7 +42,7 @@ const createComment = async ({
     throw new InternalServerError('Update post failed!');
   }
 
-  await newComment.populate('createdBy', 'name');
+  await newComment.populate('createdBy', 'name email avatarUrl');
 
   return newComment;
 };
@@ -56,7 +56,7 @@ const editComment = async ({ commentId, description }: IEditComment) => {
       description: description,
     }
   )
-    .populate('createdBy', 'name')
+    .populate('createdBy', 'name email avatarUrl')
     .exec();
 
   if (!isCommentExist) {
@@ -70,7 +70,7 @@ const deleteComment = async ({ commentId, postId }: IDeleteComment) => {
   const isCommentExist = await Comments.findOneAndDelete({
     _id: commentId,
   })
-    .populate('createdBy', 'name')
+    .populate('createdBy', 'name email avatarUrl')
     .exec();
 
   if (!isCommentExist) {

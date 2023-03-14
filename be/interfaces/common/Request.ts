@@ -7,8 +7,17 @@ export interface RequestWithUser<T> extends Request {
 }
 
 export interface QueryOpts {
+  search: string;
+  pageNo: number;
+  pageSize: number;
+  filter: Record<string, unknown>;
+  sortBy: Record<string, number>[];
+}
+
+export interface RequestQueryOpts {
   search?: string;
-  sortBy?: string;
-  pageSize?: number;
-  pageNo?: number;
+  pageNo?: string;
+  pageSize?: string;
+  postType?: string;
+  sortBy?: string | string[];
 }

@@ -14,14 +14,6 @@ postRouter
   .post([authMiddleware, uploadFilesMiddleware], postController.createPost);
 
 postRouter
-  .route('/losts')
-  .get([authMiddleware], postController.getLostsPostList);
-
-postRouter
-  .route('/founds')
-  .get([authMiddleware], postController.getFoundsPostList);
-
-postRouter
   .route('/created')
   .get([authMiddleware], postController.getCreatedPostList);
 

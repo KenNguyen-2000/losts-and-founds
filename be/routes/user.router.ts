@@ -9,6 +9,7 @@ import {
 const userRouter = express.Router();
 
 userRouter.route('/login').post(userController.login);
+userRouter.route('/login/google').get(userController.loginGoogle);
 userRouter.route('/register').post(userController.register);
 userRouter.route('/').get([authMiddleware], userController.getInfo);
 userRouter

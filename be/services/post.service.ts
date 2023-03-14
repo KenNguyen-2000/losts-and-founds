@@ -31,30 +31,26 @@ const createPost = async ({
     throw new BadRequestError('Create post unsuccessfully!');
   }
 
-  return newPost.populate('createdBy', 'name');
+  return newPost.populate('createdBy', 'name email avatarUrl');
 };
 
-const getPostList = async (queryFields: QueryOpts): Promise<IPost[]> => {
-  const { search, pageNo, pageSize, sortBy }: any = queryFields;
-  const regex = new RegExp(search, 'i');
+const getPostList = async ({
+  search,
+  sortBy,
+  pageNo,
+  pageSize,
+  filter,
+}: QueryOpts): Promise<IPost[]> => {
+  const sort: any = Object.fromEntries(sortBy as any);
+  console.log(sort);
   const posts = await Posts.find({
-    status: { $nin: 'deleted' },
-
     $or: [
-      {
-        location: {
-          $regex: regex,
-        },
-      },
-      {
-        description: {
-          $regex: regex,
-        },
-      },
+      { location: { $regex: search, $options: 'i' } },
+      { description: { $regex: search, $options: 'i' } },
     ],
+    ...filter,
   })
-    .sort(sortBy)
-    .populate('createdBy', 'name')
+    .populate('createdBy', 'name email avatarUrl')
     .populate({
       path: 'comments',
       model: 'comments',
@@ -63,12 +59,8 @@ const getPostList = async (queryFields: QueryOpts): Promise<IPost[]> => {
         model: 'users',
         select: 'name',
       },
-      options: {
-        sort: {
-          createdAt: 'desc',
-        },
-      },
     })
+    .sort(sort)
     .populate('likes', 'name')
     .skip(pageNo * pageSize)
     .limit(pageSize)
@@ -102,7 +94,7 @@ const getLostsPostList = async (queryFields: QueryOpts): Promise<IPost[]> => {
     ],
   })
     .sort(sortBy)
-    .populate('createdBy', 'name')
+    .populate('createdBy', 'name email avatarUrl')
     .populate({
       path: 'comments',
       model: 'comments',
@@ -145,7 +137,7 @@ const getFoundsPostList = async (queryFields: QueryOpts): Promise<IPost[]> => {
     ],
   })
     .sort(sortBy)
-    .populate('createdBy', 'name')
+    .populate('createdBy', 'name email avatarUrl')
     .populate({
       path: 'comments',
       model: 'comments',
@@ -173,7 +165,7 @@ const getCreatedPostList = async (userId: string): Promise<IPost[]> => {
     status: { $nin: 'deleted' },
     createdBy: userId,
   })
-    .populate('createdBy', 'name')
+    .populate('createdBy', 'name email avatarUrl')
     .populate({
       path: 'comments',
       model: 'comments',
@@ -190,7 +182,7 @@ const getCreatedPostList = async (userId: string): Promise<IPost[]> => {
 
 const getPost = async (postId: string): Promise<IPost> => {
   const post = await Posts.findOne({ _id: postId })
-    .populate('createdBy', 'name')
+    .populate('createdBy', 'name email avatarUrl')
     .populate({
       path: 'comments',
       model: 'comments',
@@ -213,7 +205,8 @@ const deletePost = async (postId: string): Promise<void> => {
     { _id: postId },
     { status: 'deleted', comments: [] }
   )
-    .populate('createdBy', 'name')
+    .populate('likes', 'name')
+    .populate('createdBy', 'name email avatarUrl')
     .exec();
 
   if (!post) {
@@ -236,7 +229,10 @@ const updatePost = async (updatedFields: IUpdatePost): Promise<IPost> => {
       $set: updatedFields,
     },
     { new: true }
-  ).exec();
+  )
+    .populate('likes', 'name')
+    .populate('createdBy', 'name email avatarUrl')
+    .exec();
   if (!updatedPost) {
     throw new NotFoundError('Post id not exists!');
   }
@@ -256,7 +252,8 @@ const likePost = async (postId: string, userId: string): Promise<IPost> => {
     },
     { new: true }
   )
-    .populate('createdBy', 'name')
+    .populate('likes', 'name')
+    .populate('createdBy', 'name email avatarUrl')
     .exec();
 
   if (!post) {
@@ -278,7 +275,8 @@ const dislikePost = async (postId: string, userId: string): Promise<IPost> => {
     },
     { new: true }
   )
-    .populate('createdBy', 'name')
+    .populate('createdBy', 'name email avatarUrl')
+    .populate('likes', 'name')
     .exec();
   if (!post) {
     throw new NotFoundError('Post id not exists!');

@@ -9,7 +9,7 @@ const errorHandler = (
 ) => {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
-  console.log(err);
+  err;
 
   // render the error page
   res.status(err.statusCode || 500).json({

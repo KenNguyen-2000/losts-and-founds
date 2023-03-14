@@ -12,7 +12,6 @@ export const authMiddleware = async (
   next: NextFunction
 ) => {
   let token;
-  console.log('Auth Middleware: ', token);
 
   if (
     req.headers.authorization &&
@@ -26,8 +25,8 @@ export const authMiddleware = async (
   }
   try {
     const decoded: any = await jwt.verify(token, process.env.JWT_SECRET!);
-
-    const user = await Users.findOne({ _id: decoded.id });
+    console.log(decoded.email);
+    const user = await Users.findOne({ email: decoded.email });
 
     if (!user) {
       return next(new NotFoundError('User does not exist!'));
@@ -36,6 +35,7 @@ export const authMiddleware = async (
     req.user = user;
     next();
   } catch (error: any) {
+    console.log(error);
     return next(new UnauthorizedError('Not authorized to access this route.'));
   }
 };
@@ -53,7 +53,7 @@ export const isPostOwnerMiddleware = async (
     if (!post) {
       return next(new NotFoundError('Post id does not exist!'));
     }
-    console.log(post.createdBy, user?._id);
+    post.createdBy, user?._id;
     const isOwner = post.createdBy._id.equals(user?._id);
 
     if (!isOwner) {
