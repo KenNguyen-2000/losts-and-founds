@@ -2,6 +2,7 @@ import { LoginPayload } from '../../interfaces/auth';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
 import { IUser } from '../../interfaces/user';
+import Cookies from 'js-cookie';
 
 interface AuthState {
   loading: boolean;
@@ -14,7 +15,7 @@ interface AuthState {
 
 const initialState: AuthState = {
   loading: false,
-  isLoggedIn: Boolean(localStorage.getItem('access_token')),
+  isLoggedIn: Boolean(Cookies.get('accessToken')),
   userInfo: {},
   userToken: null,
   error: null,

@@ -43,7 +43,6 @@ const EditPostModal = ({ closeModal, post }: IEditPostModal) => {
     dispatch(postActions.updatePost(dispatchFields));
 
     if (!isLoading) {
-      console.log('first');
       closeModal();
     }
   };

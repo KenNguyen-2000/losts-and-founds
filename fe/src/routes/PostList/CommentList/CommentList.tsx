@@ -7,6 +7,7 @@ import { useAppDispatch } from '../../../redux/store';
 import { postActions } from '../../../redux/post/postSlice';
 import { IComment } from '../../../interfaces/comment';
 import jwtDecode from 'jwt-decode';
+import Cookies from 'js-cookie';
 
 interface ICommentList {
   postId: string;
@@ -14,7 +15,7 @@ interface ICommentList {
 }
 
 const CommentList = ({ postId, comments }: ICommentList) => {
-  const user: any = jwtDecode(localStorage.getItem('access_token')!);
+  const userInfo: any = jwtDecode(Cookies.get('accessToken') as string);
 
   const dispatch = useAppDispatch();
   const [shownComments, setShownComments] = useState<IComment[]>(
@@ -76,7 +77,7 @@ const CommentList = ({ postId, comments }: ICommentList) => {
             <div className='w-8 h-8 bg-white border border-gray-200 rounded-full overflow-hidden shadow-xs'>
               <img
                 className='w-full h-auto object-cover'
-                src={logo}
+                src={comment.createdBy.avatarUrl}
                 alt='avatar'
               />
             </div>
@@ -92,7 +93,7 @@ const CommentList = ({ postId, comments }: ICommentList) => {
                   className='p-0 border-none focus:right-0 pointer-events-none bg-inherit rounded-full text-sm'
                 />
               </div>
-              {user.id === comment.createdBy._id ? (
+              {userInfo._id === comment.createdBy._id ? (
                 <div className='flex items-center relative'>
                   <div
                     className='w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-200 cursor-pointer'
@@ -131,7 +132,11 @@ const CommentList = ({ postId, comments }: ICommentList) => {
           htmlFor={`comment_${postId}`}
           className='w-8 h-8 bg-white border border-gray-200 rounded-full overflow-hidden shadow-xs'
         >
-          <img className='w-full h-auto object-cover' src={logo} alt='avatar' />
+          <img
+            className='w-full h-auto object-cover'
+            src={userInfo.avatarUrl}
+            alt='avatar'
+          />
         </label>
         <input
           type='text'

@@ -4,6 +4,8 @@ export interface IComment {
   createdBy: {
     _id: string;
     name: string;
+    avatarUrl: string;
+    email: string;
   };
 }
 

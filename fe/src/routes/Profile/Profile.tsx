@@ -35,7 +35,6 @@ const Profile = () => {
 
   const handleUpdateProfile = (event: any) => {
     event.preventDefault();
-    console.log(event.target['avatarUrl'].value);
   };
 
   useEffect(() => {
@@ -129,8 +128,8 @@ const Profile = () => {
                 </div>
                 <div className='bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6'>
                   <dt className='text-sm font-medium text-gray-500 flex items-center'>
-                    <label htmlFor='username' className='text-inherit'>
-                      Username
+                    <label htmlFor='email' className='text-inherit'>
+                      Email
                     </label>
                   </dt>
                   <dd
@@ -140,9 +139,9 @@ const Profile = () => {
                   >
                     <input
                       type='text'
-                      name='username'
-                      id='username'
-                      defaultValue={userInfo?.username}
+                      name='email'
+                      id='email'
+                      defaultValue={userInfo?.email}
                       className={`w-full py-1.5 border-0 rounded-md  bg-inherit ${
                         !isChanged
                           ? 'focus:ring-0 focus:outline-none cursor-pointer border-none pointer-events-none'
@@ -169,30 +168,6 @@ const Profile = () => {
                       defaultValue='12345678'
                       className={`w-full py-1.5 border-0 rounded-md  bg-inherit focus:ring-0 focus:outline-none cursor-pointer border-none pointer-events-none`}
                       readOnly
-                    />
-                  </dd>
-                </div>
-                <div className='bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6'>
-                  <dt className='text-sm font-medium text-gray-500 flex items-center'>
-                    <label htmlFor='email' className='text-inherit'>
-                      Email address
-                    </label>
-                  </dt>
-                  <dd
-                    className={`mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 pr-2 flex justify-between items-center cursor-pointer  ${
-                      isChanged ? '' : 'hover:bg-gray-100'
-                    }`}
-                  >
-                    <input
-                      type='text'
-                      id='email'
-                      name='email'
-                      defaultValue='margotfoster@example.com'
-                      className={`w-full py-1.5 border-0 rounded-md  bg-inherit ${
-                        !isChanged
-                          ? 'focus:ring-0 focus:outline-none cursor-pointer border-none pointer-events-none'
-                          : 'ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-amber-500'
-                      }`}
                     />
                   </dd>
                 </div>

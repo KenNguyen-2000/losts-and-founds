@@ -5,14 +5,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { solid, regular } from '@fortawesome/fontawesome-svg-core/import.macro';
 import CommentList from '../CommentList/CommentList';
 import { IPost } from '../../../interfaces/post';
-import { useAppDispatch, useAppSelector } from '../../../redux/store';
+import { useAppDispatch } from '../../../redux/store';
 import { postActions } from '../../../redux/post/postSlice';
-import PreviewImage from './PreviewImage/PreviewImage';
 import { GridImages } from '../../../components';
 import jwt from 'jwt-decode';
 import { selectUserInfo } from '../../../redux/user/userSlice';
 import jwtDecode from 'jwt-decode';
 import ReactTimeAgo from 'react-time-ago';
+import Cookies from 'js-cookie';
 
 interface IPostComponent extends IPost {
   setSelectedPost: any;
@@ -36,7 +36,7 @@ const Post = ({
 }: IPostComponent) => {
   const dispatch = useAppDispatch();
 
-  const userId: any = jwtDecode(localStorage.getItem('access_token')!);
+  const userInfo: any = jwtDecode(Cookies.get('accessToken') as string);
 
   const handleLikeBtn = () => {
     let type = 'like';
@@ -59,13 +59,13 @@ const Post = ({
     <>
       <section
         ref={ref}
-        className='post__wrapper w-full bg-white flex flex-col rounded-lg border border-gray-300 '
+        className='post__wrapper w-full bg-white flex flex-col rounded-lg border border-gray-200 '
       >
         <header className='post__header w-full px-4 py-2 flex justify-between items-center'>
           <div className='flex gap-2'>
             <img
               className='w-10 h-10 rounded-full overflow-hidden object-cover'
-              src={logo}
+              src={createdBy.avatarUrl}
               alt='avatar'
             />
             <div className='flex flex-col justify-between'>
@@ -87,7 +87,7 @@ const Post = ({
             </div>
           </div>
 
-          {userId.id === createdBy._id ? (
+          {userInfo._id === createdBy._id ? (
             <div className='flex gap-2'>
               <div
                 className='w-7 h-7 p-1.5 flex items-center justify-center rounded-full hover:bg-slate-300 post__icon'
@@ -152,7 +152,7 @@ const Post = ({
               <FontAwesomeIcon
                 icon={regular('thumbs-up')}
                 className={`w-5 h-5  post__icon ${
-                  likes.find((like) => like._id === createdBy._id)
+                  likes.find((like) => like._id === userInfo._id)
                     ? 'active'
                     : ''
                 }`}

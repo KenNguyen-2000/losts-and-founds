@@ -5,7 +5,6 @@ import { userActions } from './userSlice';
 
 function* getUserInfo() {
   try {
-    console.log('Get user info saga');
     const res: AxiosResponse = yield call(authService.getUserInfo);
     const { status, data } = res;
     if (status === 200) {

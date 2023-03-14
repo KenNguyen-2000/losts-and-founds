@@ -19,7 +19,6 @@ class PostService {
     postType,
     images,
   }: CreatePostPayload): Promise<AxiosResponse> => {
-    console.log('Create Post Service');
     const formData = new FormData();
     formData.append('location', location);
     formData.append('description', description);
@@ -34,22 +33,14 @@ class PostService {
     return res;
   };
 
-  getPostList = async ({
-    pageNo,
-    pageSize,
-  }: IPagingOpts): Promise<AxiosResponse> => {
-    console.log('Get post list Service');
+  getPostList = async (query: IPagingOpts): Promise<AxiosResponse> => {
     const res = await interceptor.get('/posts', {
-      params: {
-        pageNo: pageNo,
-        pageSize: pageSize,
-      },
+      params: query,
     });
     return res;
   };
 
   getPostsBySearch = async (search: string): Promise<AxiosResponse> => {
-    console.log('Get post list Service');
     const res = await interceptor.get('/posts', {
       params: {
         search: search,
@@ -61,13 +52,11 @@ class PostService {
   };
 
   getPost = async (_id: string): Promise<AxiosResponse> => {
-    console.log('Get Post Service');
     const res = await interceptor.get(`/posts/${_id}`);
     return res;
   };
 
   deletePost = async (_id: string): Promise<AxiosResponse> => {
-    console.log('Delete Post Service');
     const res = await interceptor.delete(`/posts/${_id}`);
     return res;
   };
@@ -79,8 +68,6 @@ class PostService {
     postType,
     images,
   }: UpdatePostPayload): Promise<AxiosResponse> => {
-    console.log('Update Post Service');
-    console.log(description);
     const formData = new FormData();
     formData.append('location', location);
     formData.append('description', description);
@@ -98,8 +85,6 @@ class PostService {
   };
 
   likePost = async ({ _id, type }: LikePostPayload): Promise<AxiosResponse> => {
-    console.log('Like Post Service');
-
     const res = await interceptor.put(`/posts/${type}/${_id}`, {
       headers: {
         'Content-Type': 'multipart/form-data',

@@ -11,8 +11,6 @@ class CommentService {
     description,
     postId,
   }: CommentPostPayload): Promise<AxiosResponse> => {
-    console.log('Comment Post Service');
-
     const res = await interceptor.post(`/comments/${postId}`, {
       description,
     });
@@ -22,8 +20,6 @@ class CommentService {
     commentId,
     description,
   }: EditCommentPayload): Promise<AxiosResponse> => {
-    console.log('Edit comment Service');
-
     const res = await interceptor.put(`/comments/${commentId}`, {
       description: description,
     });
@@ -34,8 +30,6 @@ class CommentService {
     commentId,
     postId,
   }: DeleteCommentPayload): Promise<AxiosResponse> => {
-    console.log('Delete comment Service');
-
     const res = await interceptor.delete(`/comments/${postId}/${commentId}`);
     return res;
   };

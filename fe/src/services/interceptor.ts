@@ -1,4 +1,5 @@
 import axios, { AxiosError } from 'axios';
+import Cookies from 'js-cookie';
 
 const interceptor = axios.create({
   baseURL: process.env.REACT_APP_SERVER_URL,
@@ -6,7 +7,7 @@ const interceptor = axios.create({
 });
 
 interceptor.interceptors.request.use(function (req) {
-  const token = localStorage.getItem('access_token');
+  const token = Cookies.get('accessToken');
   if (token && req.headers) req.headers['Authorization'] = `Bearer ${token}`;
 
   // req.headers['Content-Type'] = 'application/json';
@@ -15,15 +16,11 @@ interceptor.interceptors.request.use(function (req) {
 
 interceptor.interceptors.response.use(
   function (res) {
-    console.log('Interceptor', res);
-
     return res;
   },
   function (error: AxiosError) {
-    console.log('Interceptor');
-    console.log(error);
     if (error?.response!.status === 401) {
-      localStorage.clear();
+      Cookies.remove('accessToken');
       window.location.assign('/login');
     }
     return Promise.reject(error.response);

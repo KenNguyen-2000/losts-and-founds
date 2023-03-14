@@ -18,13 +18,11 @@ import commentService from '../../services/comment.service';
 
 function* getPostList(action: PayloadAction<IPagingOpts>) {
   try {
-    console.log('Get Post List Saga');
     const res: AxiosResponse = yield call(
       postService.getPostList,
       action.payload
     );
     const { status, data } = res;
-    console.log(data);
     if (status === 200) {
       yield delay(1000);
       yield put(
@@ -39,15 +37,34 @@ function* getPostList(action: PayloadAction<IPagingOpts>) {
   }
 }
 
+function* getMorePosts(action: PayloadAction<IPagingOpts>) {
+  try {
+    const res: AxiosResponse = yield call(
+      postService.getPostList,
+      action.payload
+    );
+    const { status, data } = res;
+    if (status === 200) {
+      yield delay(1000);
+      yield put(
+        postActions.getMorePostsSuccess({
+          posts: data.posts,
+          hasMore: data.hasMore,
+        })
+      );
+    }
+  } catch (error: any) {
+    yield put(postActions.getMorePostsFailed(error.message)); // Dispatch action
+  }
+}
+
 function* getPostsBySearch(action: PayloadAction<string>) {
   try {
-    console.log('Get Post List Saga');
     const res: AxiosResponse = yield call(
       postService.getPostsBySearch,
       action.payload
     );
     const { status, data } = res;
-    console.log(data);
     if (status === 200) {
       yield delay(1000);
       yield put(
@@ -64,7 +81,6 @@ function* getPostsBySearch(action: PayloadAction<string>) {
 
 function* createPost(action: PayloadAction<CreatePostPayload>) {
   try {
-    console.log('Create Post Saga');
     const res: AxiosResponse = yield call(
       postService.createPost,
       action.payload
@@ -83,7 +99,6 @@ function* createPost(action: PayloadAction<CreatePostPayload>) {
 function* deletePost(action: PayloadAction<string>) {
   const postId: string = action.payload;
   try {
-    console.log('Delete Post Saga:');
     const res: AxiosResponse = yield call(postService.deletePost, postId);
     const { status } = res;
     if (status === 200) {
@@ -98,7 +113,6 @@ function* deletePost(action: PayloadAction<string>) {
 function* getPost(action: PayloadAction<string>) {
   const postId: string = action.payload;
   try {
-    console.log('Delete Post Saga:');
     const res: AxiosResponse = yield call(postService.getPost, postId);
     const { status, data } = res;
     if (status === 200) {
@@ -113,7 +127,6 @@ function* getPost(action: PayloadAction<string>) {
 
 function* updatePost(action: PayloadAction<UpdatePostPayload>) {
   try {
-    console.log('Update Post Saga:');
     const res: AxiosResponse = yield call(
       postService.updatePost,
       action.payload
@@ -131,14 +144,12 @@ function* updatePost(action: PayloadAction<UpdatePostPayload>) {
 
 function* commentPost(action: PayloadAction<CommentPostPayload>) {
   try {
-    console.log('Comment Post Saga:');
     const res: AxiosResponse = yield call(
       commentService.commentPost,
       action.payload
     );
     const { status, data } = res;
     if (status === 201) {
-      console.log(data);
       yield put(
         postActions.commentPostSuccess({
           postId: action.payload.postId,
@@ -155,14 +166,12 @@ function* commentPost(action: PayloadAction<CommentPostPayload>) {
 
 function* editCommentPost(action: PayloadAction<EditCommentPayload>) {
   try {
-    console.log('Edit comment Saga:');
     const res: AxiosResponse = yield call(
       commentService.editComment,
       action.payload
     );
     const { status, data } = res;
     if (status === 201) {
-      console.log(data);
       yield put(
         postActions.editCommentPostSuccess({
           postId: action.payload.postId,
@@ -179,14 +188,12 @@ function* editCommentPost(action: PayloadAction<EditCommentPayload>) {
 
 function* deleteCommentPost(action: PayloadAction<DeleteCommentPayload>) {
   try {
-    console.log('Delete comment Saga:');
     const res: AxiosResponse = yield call(
       commentService.deleteComment,
       action.payload
     );
     const { status, data } = res;
     if (status === 201) {
-      console.log(data);
       yield put(
         postActions.commentPostSuccess({
           postId: action.payload.postId,
@@ -203,11 +210,9 @@ function* deleteCommentPost(action: PayloadAction<DeleteCommentPayload>) {
 
 function* likePost(action: PayloadAction<LikePostPayload>) {
   try {
-    console.log('Update Post Saga:');
     const res: AxiosResponse = yield call(postService.likePost, action.payload);
     const { status, data } = res;
     if (status === 200) {
-      console.log(data.post);
       yield put(postActions.likePostSuccess(data.post));
     } else {
       yield put(postActions.likePostFailed('Something went wrong')); // Dispatch action
@@ -220,6 +225,7 @@ function* likePost(action: PayloadAction<LikePostPayload>) {
 export function* postSaga() {
   yield takeLatest(postActions.createPost.type, createPost);
   yield takeLatest(postActions.getPostList.type, getPostList);
+  yield takeLatest(postActions.getMorePosts.type, getMorePosts);
   yield takeLatest(postActions.getPost.type, getPost);
   yield takeEvery(postActions.deletePost.type, deletePost);
   yield takeLatest(postActions.updatePost.type, updatePost);

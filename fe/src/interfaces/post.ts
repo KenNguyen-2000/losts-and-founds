@@ -25,6 +25,8 @@ export interface ISearchPosts extends IPagingOpts {
 export interface PopulatedUser {
   _id: string;
   name: string;
+  avatarUrl?: string;
+  email: string;
 }
 
 export interface CreatePostPayload {
@@ -59,6 +61,7 @@ export interface IGetMorePost {
 export interface IPagingOpts {
   pageNo: number;
   pageSize: number;
-  filter?: string;
+  sortBy?: string | string[];
   search?: string;
+  postType?: string;
 }

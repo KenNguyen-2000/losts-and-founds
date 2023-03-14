@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import logo from '../../assets/images/logo.png';
 import { useAppDispatch } from '../../redux/store';
-import './style.scss';
+import './Navbar.style.scss';
 import { authActions } from '../../redux/auth/auth.slice';
 import { useNavigate } from 'react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

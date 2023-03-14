@@ -5,6 +5,8 @@ import { useAppSelector } from '../redux/store';
 
 const PublicRoute = () => {
   const isLoggedIn = useAppSelector(selectAuthLoggedIn);
+  console.log(isLoggedIn);
+
   return !isLoggedIn ? <Outlet /> : <Navigate to={'/post-list'} />;
 };
 

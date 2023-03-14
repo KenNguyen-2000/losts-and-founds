@@ -13,19 +13,18 @@ import {
 } from 'redux-saga/effects';
 import { LoginPayload } from '../../interfaces/auth';
 import { authActions } from './auth.slice';
+import Cookies from 'js-cookie';
 
-function* handleLogin(payload: LoginPayload) {
+function* handleLogin(action: PayloadAction<LoginPayload>) {
   try {
-    console.log('Login Saga');
     const res: AxiosResponse = yield call(
       authService.login,
-      payload.username,
-      payload.password
+      action.payload.email,
+      action.payload.password
     );
     const { status, data } = res;
-    console.log(data);
-    if (status === 200) {
-      localStorage.setItem('access_token', data.accessToken);
+    if (status >= 200 && status < 300) {
+      Cookies.set('accessToken', data.accessToken);
       yield put(authActions.loginSuccess(data));
     }
   } catch (error: any) {
@@ -35,27 +34,10 @@ function* handleLogin(payload: LoginPayload) {
 
 function* handleLogout() {
   yield delay(500);
-  console.log('logout saga');
-  localStorage.removeItem('access_token');
-}
-
-function* watchLoginFlow() {
-  while (true) {
-    console.log('Watcher');
-    const isLoggedIn = Boolean(localStorage.getItem('access_token'));
-    if (!isLoggedIn) {
-      const action: PayloadAction<LoginPayload> = yield take(
-        authActions.login.type
-      );
-      console.log(action);
-      yield call(handleLogin, action.payload); // Non-blocking
-    }
-
-    yield take(authActions.logout.type);
-    yield call(handleLogout); // Blocking - wait for the logout function to finish before continuing to watch watchLoginFlow
-  }
+  Cookies.remove('accessToken');
 }
 
 export function* authSaga() {
-  yield fork(watchLoginFlow);
+  yield takeLatest(authActions.login.type, handleLogin);
+  yield takeLatest(authActions.logout.type, handleLogout);
 }

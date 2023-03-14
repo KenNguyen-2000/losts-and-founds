@@ -23,9 +23,8 @@ interface PostsState {
   loading: boolean;
   getPostLoading: boolean;
   error?: string | undefined;
-  hasMore: boolean;
   pageNo: number;
-  pageSize: number;
+  hasMore: boolean;
 }
 
 const initialState: PostsState = {
@@ -34,7 +33,6 @@ const initialState: PostsState = {
   hasMore: true,
   getPostLoading: false,
   pageNo: 0,
-  pageSize: 3,
 };
 
 const postSlice = createSlice({
@@ -45,7 +43,6 @@ const postSlice = createSlice({
       state.loading = true;
     },
     createPostSuccess(state, action: PayloadAction<IPost>) {
-      console.log('Post slice finish');
       state.posts.push(action.payload);
       state.loading = false;
     },
@@ -55,29 +52,46 @@ const postSlice = createSlice({
     },
 
     getPostList(state, action: PayloadAction<IPagingOpts>) {
+      console.log('Get list');
+      state.loading = true;
       state.getPostLoading = true;
     },
     getPostListSuccess(state, action: PayloadAction<GetPostRes>) {
+      state.posts = action.payload.posts;
+      state.hasMore = action.payload.hasMore;
+      state.pageNo = state.pageNo + 1;
+      state.loading = false;
+      state.getPostLoading = false;
+    },
+    getPostListFailed(state, action: PayloadAction<string>) {
+      state.error = action.payload;
+      state.loading = false;
+      state.getPostLoading = false;
+    },
+
+    getMorePosts(state, action: PayloadAction<IPagingOpts>) {
+      console.log('Get More');
+      state.getPostLoading = true;
+    },
+    getMorePostsSuccess(state, action: PayloadAction<GetPostRes>) {
       state.posts = state.posts.concat(action.payload.posts);
       state.hasMore = action.payload.hasMore;
       state.pageNo = state.pageNo + 1;
       state.getPostLoading = false;
     },
-    getPostListFailed(state, action: PayloadAction<string>) {
+    getMorePostsFailed(state, action: PayloadAction<string>) {
       state.error = action.payload;
       state.getPostLoading = false;
     },
 
     getPostsBySearch(state, action: PayloadAction<string>) {
       state.loading = true;
-      state.pageNo = 0;
       state.getPostLoading = true;
       // return state;
     },
     getPostsBySearchSuccess(state, action: PayloadAction<GetPostRes>) {
       state.posts = action.payload.posts;
       state.hasMore = action.payload.hasMore;
-      state.pageNo = state.pageNo + 1;
       state.loading = false;
       state.getPostLoading = false;
     },
@@ -130,7 +144,7 @@ const postSlice = createSlice({
     },
 
     likePost(state, action: PayloadAction<LikePostPayload>) {
-      state.loading = true;
+      // state.loading = true;
     },
     likePostSuccess(state, action: PayloadAction<LikePostRes>) {
       state.posts = state.posts.map((post: IPost) => {
@@ -151,7 +165,6 @@ const postSlice = createSlice({
       // state.loading = true;
     },
     commentPostSuccess(state, action: PayloadAction<ICommentResponse>) {
-      console.log(action.payload);
       state.posts = state.posts.map((post: IPost) => {
         if (post._id === action.payload.postId) {
           post.comments.push({
@@ -175,7 +188,6 @@ const postSlice = createSlice({
       // state.loading = true;
     },
     editCommentPostSuccess(state, action: PayloadAction<ICommentResponse>) {
-      console.log(action.payload);
       state.posts = state.posts.map((post: IPost) => {
         if (post._id === action.payload.postId) {
           post.comments = post.comments.map((comment) => {
@@ -204,7 +216,6 @@ const postSlice = createSlice({
       // state.loading = true;
     },
     deleteCommentPostSuccess(state, action: PayloadAction<ICommentResponse>) {
-      console.log(action.payload);
       state.posts = state.posts.map((post: IPost) => {
         if (post._id === action.payload.postId) {
           post.comments = post.comments.filter(
@@ -221,6 +232,10 @@ const postSlice = createSlice({
       state.error = action.payload;
       // state.loading = false;
     },
+
+    reloadPosts(state) {
+      state.posts = [];
+    },
   },
 });
 
@@ -234,10 +249,6 @@ export const selectPostsLoading = (state: RootState) =>
 
 export const selectLoading = (state: RootState) => state.posts.loading;
 export const selectPostsHasMore = (state: RootState) => state.posts.hasMore;
-export const selectPagingPosts = (state: RootState) => ({
-  pageNo: state.posts.pageNo,
-  pageSize: state.posts.pageSize,
-  hasMore: state.posts.hasMore,
-});
+export const selectPostsPageNo = (state: RootState) => state.posts.pageNo;
 
 export default postReducer;

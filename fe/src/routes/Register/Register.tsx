@@ -9,9 +9,8 @@ const Register = () => {
 
   const submitRegister = async (event: any) => {
     event.preventDefault();
-    console.log(process.env.REACT_APP_SERVER_URL);
     const {
-      username,
+      email,
       password,
       confirmPassword,
       firstName,
@@ -31,7 +30,7 @@ const Register = () => {
     const res = await axios.post(
       `${process.env.REACT_APP_SERVER_URL}/users/register`,
       {
-        username: username.value,
+        email: email.value,
         password: password.value,
         name: `${firstName.value} ${lastName.value}`,
         phoneNumber: phoneNumber.value,
@@ -49,12 +48,23 @@ const Register = () => {
         <h3 className='absolute right-4 top-4 italic text-xs text-gray-600'>
           Lost and Found
         </h3>
-        <div className='w-1/2'>
+        <div className='w-1/2 relative'>
           <img
             alt='banner'
             src={loginBanner}
             className='w-full h-full object-cover'
           />
+          <div className='absolute bottom-0 right-0 left-0'>
+            <div className='w-full text-center text-sm backdrop-brightness-75 py-4 text-white mt-1'>
+              Already have a account?{' '}
+              <a
+                href='/login'
+                className='text-amber-400 underline cursor-pointer'
+              >
+                Login
+              </a>
+            </div>
+          </div>
         </div>
         <div className='flex-grow flex flex-col items-start justify-center px-14 py-9'>
           <div className='w-full flex flex-col gap-1 text-center mb-6'>
@@ -110,15 +120,15 @@ const Register = () => {
             </div>
             <div className='w-full'>
               <label
-                htmlFor='username'
+                htmlFor='email'
                 className='block text-base font-medium leading-6 text-gray-900'
               >
-                Username
+                Email
               </label>
               <input
                 type='text'
-                name='username'
-                id='username'
+                name='email'
+                id='email'
                 autoComplete='off'
                 className='mt-1 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-amber-600 sm:text-sm sm:leading-6'
                 minLength={5}
@@ -203,15 +213,6 @@ const Register = () => {
               Sign up
             </button>
           </form>
-          <div className='w-full text-center text-sm text-gray-500 mt-1'>
-            Already have a account?{' '}
-            <a
-              href='/login'
-              className='text-indigo-500 underline cursor-pointer'
-            >
-              Login
-            </a>
-          </div>
         </div>
       </div>
     </div>

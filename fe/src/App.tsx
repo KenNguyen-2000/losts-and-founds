@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router';
 import { Login, PostList, Profile, Register } from './routes';
 import PublicRoute from './routes/PublicRoute';
 import PrivateRoute from './routes/PrivateRoute';
+import LayoutedPage from './components/LayoutedPage/LayoutedPage';
 
 function App() {
   return (
@@ -14,7 +15,21 @@ function App() {
           <Route path='/register' element={<Register />} />
         </Route>
         <Route path='/' element={<PrivateRoute />}>
-          <Route path='/post-list' element={<PostList />} />
+          <Route index element={<PostList />} />
+          <Route
+            path='/post-list'
+            element={<LayoutedPage component={<PostList />} />}
+          />
+          <Route
+            path='/post-list/losts'
+            element={
+              <LayoutedPage component={<PostList typePost={'lost'} />} />
+            }
+          />
+          <Route
+            path='/post-list/founds'
+            element={<LayoutedPage component={<PostList typePost='found' />} />}
+          />
           <Route path='/profile' element={<Profile />} />
         </Route>
       </Routes>

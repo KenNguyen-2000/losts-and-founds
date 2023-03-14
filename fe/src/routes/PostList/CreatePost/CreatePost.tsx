@@ -1,11 +1,14 @@
 import { regular, solid } from '@fortawesome/fontawesome-svg-core/import.macro';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Cookies from 'js-cookie';
+import jwtDecode from 'jwt-decode';
 import React, { useState, useEffect } from 'react';
 import { postActions, selectPostsLoading } from '../../../redux/post/postSlice';
 import { useAppDispatch, useAppSelector } from '../../../redux/store';
-import interceptor from '../../../services/interceptor';
 
 const CreatePost = ({ closeModal }: any) => {
+  const userInfo: any = jwtDecode(Cookies.get('accessToken') as string);
+
   const [imageSrc, setImageSrc] = useState('');
   const [files, setFiles] = useState<Blob[]>([]);
   const dispatch = useAppDispatch();
@@ -31,7 +34,6 @@ const CreatePost = ({ closeModal }: any) => {
     );
 
     if (!isLoading) {
-      console.log('first');
       closeModal();
     }
   };
@@ -58,7 +60,11 @@ const CreatePost = ({ closeModal }: any) => {
           {/* ********************Avatar header*********************** */}
           <div className='w-full flex gap-3 items-center py-4'>
             <div className='w-10 h-10 rounded-full border border-gray-200 overflow-hidden'>
-              <img alt='avatar' className='w-full h-auto object-cover' />
+              <img
+                alt='avatar'
+                src={userInfo.avatarUrl}
+                className='w-full h-auto object-cover'
+              />
             </div>
             <div className='h-full flex flex-col justify-between'>
               <h2 className='text-sm font-semibold'>Nguyen Kien</h2>
