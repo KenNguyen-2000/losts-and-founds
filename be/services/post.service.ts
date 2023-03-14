@@ -48,6 +48,7 @@ const getPostList = async ({
       { location: { $regex: search, $options: 'i' } },
       { description: { $regex: search, $options: 'i' } },
     ],
+    status: 'default',
     ...filter,
   })
     .populate('createdBy', 'name email avatarUrl')
@@ -57,7 +58,7 @@ const getPostList = async ({
       populate: {
         path: 'createdBy',
         model: 'users',
-        select: 'name',
+        select: 'name email avatarUrl',
       },
     })
     .sort(sort)
@@ -101,7 +102,7 @@ const getLostsPostList = async (queryFields: QueryOpts): Promise<IPost[]> => {
       populate: {
         path: 'createdBy',
         model: 'users',
-        select: 'name',
+        select: 'name email avatarUrl',
       },
       options: {
         sort: {
@@ -144,7 +145,7 @@ const getFoundsPostList = async (queryFields: QueryOpts): Promise<IPost[]> => {
       populate: {
         path: 'createdBy',
         model: 'users',
-        select: 'name',
+        select: 'name email avatarUrl',
       },
       options: {
         sort: {
@@ -172,7 +173,7 @@ const getCreatedPostList = async (userId: string): Promise<IPost[]> => {
       populate: {
         path: 'createdBy',
         model: 'users',
-        select: 'name',
+        select: 'name email avatarUrl',
       },
     })
     .exec();
@@ -189,7 +190,7 @@ const getPost = async (postId: string): Promise<IPost> => {
       populate: {
         path: 'createdBy',
         model: 'users',
-        select: 'name',
+        select: 'name email avatarUrl',
       },
     })
     .exec();
@@ -197,7 +198,7 @@ const getPost = async (postId: string): Promise<IPost> => {
     throw new NotFoundError('Post id not exists!');
   }
 
-  return { ...post.toObject() };
+  return post;
 };
 
 const deletePost = async (postId: string): Promise<void> => {
@@ -237,7 +238,7 @@ const updatePost = async (updatedFields: IUpdatePost): Promise<IPost> => {
     throw new NotFoundError('Post id not exists!');
   }
 
-  return { ...updatedPost.toObject() };
+  return { ...updatedPost };
 };
 
 const likePost = async (postId: string, userId: string): Promise<IPost> => {
@@ -260,7 +261,7 @@ const likePost = async (postId: string, userId: string): Promise<IPost> => {
     throw new NotFoundError('Post id not exists!');
   }
 
-  return { ...post.toObject() };
+  return post;
 };
 
 const dislikePost = async (postId: string, userId: string): Promise<IPost> => {
@@ -282,7 +283,7 @@ const dislikePost = async (postId: string, userId: string): Promise<IPost> => {
     throw new NotFoundError('Post id not exists!');
   }
 
-  return { ...post.toObject() };
+  return post;
 };
 
 const commentPost = async ({
@@ -307,7 +308,16 @@ const commentPost = async ({
     },
     { new: true }
   )
-    .populate('comments')
+    .populate('createdBy', 'name email avatarUrl')
+    .populate({
+      path: 'comments',
+      model: 'comments',
+      populate: {
+        path: 'createdBy',
+        model: 'users',
+        select: 'name',
+      },
+    })
     .exec();
   if (!updatedPost) {
     throw new InternalServerError('Save post unsuccessfully!');

@@ -9,7 +9,7 @@ import {
   NotFoundError,
   BadRequestError,
 } from '../errors/error';
-import { QueryOpts, RequestQueryOpts } from '../interfaces/common/Request';
+import { RequestQueryOpts } from '../interfaces/common/Request';
 
 class PostController {
   async createPost(req: Request, res: Response, next: NextFunction) {
