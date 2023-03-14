@@ -95,13 +95,13 @@ const Sidebar = () => {
         </a>
 
         <a
-          href='/post-list/sales'
+          href='/post-list/auction'
           className={`navbar__nav-item relative px-8 py-4 text-sm font-medium  ${
-            currentLocation === 'post-list/sales' ? 'active__nav' : ''
+            currentLocation === 'post-list/auction' ? 'active__nav' : ''
           }`}
           aria-current='page'
         >
-          Sales
+          Auction
         </a>
       </div>
     </div>

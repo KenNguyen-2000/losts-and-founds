@@ -58,7 +58,7 @@ const Navbar = () => {
             onClick={() => setIsAvatarOpen(!isAvatarOpen)}
           ></div>
           <ul
-            className={`w-32 h-24 bg-white rounded-lg border border-gray-200 drop-shadow-xl absolute top-full right-0 mt-2 flex flex-col justify-evenly py-1 overflow-hidden transition-all duration-200 ease-in-out scale-0 origin-top-right ${
+            className={`w-32 h-24 bg-white rounded-lg border border-gray-200 drop-shadow-xl absolute top-full right-0 mt-2 flex flex-col justify-evenly py-1 overflow-hidden transition-all duration-200 ease-in-out scale-0 origin-top-right z-20 ${
               isAvatarOpen ? 'scale-100' : ''
             } `}
           >

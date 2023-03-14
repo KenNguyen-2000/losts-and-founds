@@ -15,7 +15,7 @@ function App() {
           <Route path='/register' element={<Register />} />
         </Route>
         <Route path='/' element={<PrivateRoute />}>
-          <Route index element={<PostList />} />
+          <Route index element={<LayoutedPage component={<PostList />} />} />
           <Route
             path='/post-list'
             element={<LayoutedPage component={<PostList />} />}
@@ -29,6 +29,12 @@ function App() {
           <Route
             path='/post-list/founds'
             element={<LayoutedPage component={<PostList typePost='found' />} />}
+          />
+          <Route
+            path='/post-list/auction'
+            element={
+              <LayoutedPage component={<PostList typePost='auction' />} />
+            }
           />
           <Route path='/profile' element={<Profile />} />
         </Route>
