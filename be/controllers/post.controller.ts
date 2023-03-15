@@ -10,16 +10,21 @@ import {
   BadRequestError,
 } from '../errors/error';
 import { RequestQueryOpts } from '../interfaces/common/Request';
+import path from 'path';
+import url from 'url';
+import userService from '../services/user.service';
+const stripe = require('stripe')(
+  'sk_test_51MlohlKIBca3SmNV3O8ppOcB1ZVei3CRdeUh0Xdpzwv6gvaPinumgq5KKmrcDKCydPyCjFZKJSRL9XrfAiYhRQfB00fN4oHelR'
+);
 
 class PostController {
   async createPost(req: Request, res: Response, next: NextFunction) {
-    const { description, location, postType }: IPost = req.body;
+    const { description, location, postType, itemName }: IPost = req.body;
     const { user, files } = req;
     try {
       if (!files) {
         next(new BadRequestError('At least one image required!'));
       }
-      files;
       const images: string[] = (files as Express.Multer.File[])?.map(
         (file: Express.Multer.File) => {
           return file.filename;
@@ -31,6 +36,7 @@ class PostController {
         postType,
         createdBy: user?._id,
         location,
+        itemName,
       });
 
       if (newPost) {
@@ -113,7 +119,7 @@ class PostController {
 
   async updatePost(req: Request, res: Response, next: NextFunction) {
     const { postId } = req.params;
-    const { description, location, postType }: IUpdatePost = req.body;
+    const { description, location, postType, itemName }: IUpdatePost = req.body;
     const { files } = req;
 
     let updatedFiels: IUpdatePost = {
@@ -121,6 +127,7 @@ class PostController {
       description,
       location,
       postType,
+      itemName,
     };
 
     if (files?.length! > 0) {
@@ -213,6 +220,128 @@ class PostController {
       }
     } catch (error) {
       next(error);
+    }
+  }
+
+  async checkoutSession(req: Request, res: Response, next: NextFunction) {
+    const { sessionId } = req.query;
+    console.log(sessionId);
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+  }
+
+  async raisePrice(req: Request, res: Response, next: NextFunction) {
+    const { priceStep, minPrice } = req.body;
+    const { postId } = req.params;
+    const { user } = req;
+    try {
+      const updatedPost = await postService.raisePrice({
+        priceStep,
+        postId,
+        raisedUser: user?._id,
+        minPrice,
+      });
+
+      res
+        .status(200)
+        .json({ message: 'Raise price successfully!', post: updatedPost });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getCheckoutPage(req: Request, res: Response, next: NextFunction) {
+    const { amount, itemName } = req.body;
+    const { user } = req;
+    const { postId } = req.params;
+
+    const post: any = await postService.getPost(postId as string);
+
+    try {
+      // Create a new product and price for the item being sold
+      const product = await stripe.products.create({
+        name: itemName,
+      });
+
+      const stripePrice = await stripe.prices.create({
+        unit_amount: amount + '00',
+        currency: 'usd',
+        product: product.id,
+      });
+      console.log(post);
+      // Look up the connected account ID associated with the seller's email
+      const connectedAccounts = await stripe.accounts.retrieve(
+        post.createdBy.stripe_account_ID
+      );
+
+      const connectedAccountId = connectedAccounts.id;
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price: stripePrice.id,
+            quantity: 1,
+          },
+        ],
+        success_url: `http://localhost:3000/profile?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: 'http://localhost:3000/post-list',
+        mode: 'payment',
+        customer_email: user!.email,
+      });
+
+      res
+        .status(200)
+        .json({ message: 'redirect', url: session.url, sessionId: session.id });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async handleSuccessfulPayment(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    const { sessionId } = req.body;
+    const { user } = req;
+    try {
+      const checkoutSession = await stripe.checkout.sessions.retrieve(
+        sessionId
+      );
+      const paymentIntentId: string = checkoutSession.payment_intent;
+      const paymentIntent = await stripe.paymentIntents.retrieve(
+        paymentIntentId
+      );
+
+      // Retrieve the connected account ID associated with the seller's email
+      const connectedAccountId = 'acct_1Mlus72cFuKOJfrs';
+
+      // Calculate the amount to transfer to the seller, taking into account the application fee
+      const amount =
+        paymentIntent.amount - paymentIntent.application_fee_amount;
+
+      // Create a payout to the seller
+      const payout = await stripe.payouts.create({
+        amount,
+        currency: 'usd',
+        destination: {
+          stripe_account: connectedAccountId,
+        },
+      });
+
+      console.log(
+        `Initiated payout of ${
+          amount / 100
+        } USD to account ${connectedAccountId} with ID ${payout.id}`
+      );
+      res.status(200).json({
+        message: `Initiated payout of ${
+          amount / 100
+        } USD to account ${connectedAccountId} with ID ${payout.id}`,
+      });
+    } catch (error: any) {
+      console.error(`Error handling successful payment: ${error.message}`);
+      throw error;
     }
   }
 }

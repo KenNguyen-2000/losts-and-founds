@@ -1,6 +1,6 @@
-import mongoose from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 
-export interface IUser {
+export interface IUser extends Document {
   email: string;
   password: string;
   phoneNumber?: string;
@@ -8,6 +8,7 @@ export interface IUser {
   avatarUrl?: string;
   dob?: Date;
   isAdmin?: boolean;
+  stripe_account_ID?: string;
 }
 
 const userSchema = new mongoose.Schema<IUser>(
@@ -19,7 +20,6 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     phoneNumber: {
       type: String,
-      unique: true,
       min: 9,
       max: 15,
     },
@@ -41,12 +41,15 @@ const userSchema = new mongoose.Schema<IUser>(
       type: Boolean,
       default: false,
     },
+    stripe_account_ID: {
+      type: String,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-const Users = mongoose.model<IUser>('users', userSchema);
+const Users: Model<IUser> = mongoose.model('users', userSchema);
 
 export default Users;

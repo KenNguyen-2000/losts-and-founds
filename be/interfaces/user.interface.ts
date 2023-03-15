@@ -4,7 +4,7 @@ export interface ILogin {
 }
 
 export interface IChangePassword {
-  userId: string;
+  email: string;
   oldPassword: string;
   newPassword: string;
 }

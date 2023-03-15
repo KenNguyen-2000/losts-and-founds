@@ -5,13 +5,22 @@ import BaseError from '../errors/BaseError.error';
 import userService from '../services/user.service';
 import InternalServerError from '../errors/InternalServer.error';
 import { IUpdateProfile } from '../interfaces/user.interface';
+import nodemailer from 'nodemailer';
 
 const accessTokenCookieOptions: CookieOptions = {
   httpOnly: true,
-  sameSite: 'none',
-  secure: false,
+  sameSite: 'lax',
   maxAge: 3600000, // cookie expires in 1 hour
 };
+
+const transporter = nodemailer.createTransport({
+  host: 'smtp-mail.outlook.com',
+
+  auth: {
+    user: process.env.AUTH_MAIL, // generated ethereal user
+    pass: process.env.AUTH_PASS, // generated ethereal password
+  },
+});
 
 class UserController {
   async login(req: Request, res: Response, next: NextFunction) {
@@ -86,6 +95,7 @@ class UserController {
           email: user?.email,
           name: user?.name,
           avatarUrl: user?.avatarUrl,
+          stripe_account_ID: user?.stripe_account_ID,
         },
         process.env.JWT_SECRET!,
         { expiresIn: '1h' } // 15 minutes
@@ -177,11 +187,11 @@ class UserController {
   }
 
   async changePassword(req: Request, res: Response, next: NextFunction) {
-    const { oldPassword, newPassword } = req.body;
+    const { oldPassword, newPassword, email } = req.body;
     const { user } = req;
     try {
       const userInfo = await userService.changePassword({
-        userId: user?._id,
+        email,
         oldPassword,
         newPassword,
       });
@@ -196,6 +206,59 @@ class UserController {
       }
     } catch (error) {
       return next(error);
+    }
+  }
+
+  async sendOtpEmail(req: Request, res: Response, next: NextFunction) {
+    const { email } = req.body;
+    try {
+      const otp = `${Math.floor(100000 + Math.random() * 900000)}`;
+      const createdOtp = await userService.createVerificationOtp(email, otp);
+      // send mail with defined transport object
+      let info = await transporter.sendMail({
+        from: process.env.AUTH_MAIL, // sender address
+        to: email, // list of receivers
+        subject: 'Forgot password OTP', // Subject line
+        text: otp as string, // plain text body
+        html: `<p>Your forgot password OTP: <b>${otp}</b></p>
+        <p>Verify url: <a href="http://localhost:3000/verify-otp/${createdOtp._id}?email=${email}">verifyotp</a></p>
+        <p>Please don't share this code to anyone</p>
+        `, // html body
+      });
+
+      res.status(200).json({
+        status: 'PENDING',
+        message: 'OTP is sending',
+        otpId: createdOtp._id,
+        email: email,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async verifyOtp(req: Request, res: Response, next: NextFunction) {
+    const { otpId, otp, email } = req.body;
+    try {
+      const createdOtp = await userService.verifyOtp(otpId, otp);
+      // send mail with defined transport object
+      if (createdOtp) {
+        res.status(200).json({ message: 'Otp verified!', email: email });
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+  async newPassword(req: Request, res: Response, next: NextFunction) {
+    const { newPassword, email } = req.body;
+    try {
+      const updatedUser = await userService.newPassword(newPassword, email);
+      // send mail with defined transport object
+      if (updatedUser) {
+        res.status(200).json({ message: 'Update password success!' });
+      }
+    } catch (error) {
+      next(error);
     }
   }
 }

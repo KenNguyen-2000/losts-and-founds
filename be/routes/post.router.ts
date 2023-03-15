@@ -5,6 +5,9 @@ import {
   isPostOwnerMiddleware,
 } from '../middleware/auth.middleware';
 import { uploadFilesMiddleware } from '../middleware/upload-img.middleware';
+const stripe = require('stripe')(
+  'sk_test_51MlohlKIBca3SmNV3O8ppOcB1ZVei3CRdeUh0Xdpzwv6gvaPinumgq5KKmrcDKCydPyCjFZKJSRL9XrfAiYhRQfB00fN4oHelR'
+);
 
 const postRouter = express.Router();
 
@@ -37,5 +40,24 @@ postRouter
 postRouter
   .route('/comment/:postId')
   .put([authMiddleware], postController.commentPost);
+
+postRouter
+  .route('/:postId/create-checkout-session')
+  .post([authMiddleware], postController.getCheckoutPage);
+
+// Fetch the Checkout Session to display the JSON result on the success page
+postRouter.get('/checkout-session', async (req, res) => {
+  const { sessionId } = req.query;
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
+  res.send(session);
+});
+
+postRouter
+  .route('/auction/raise/:postId')
+  .put([authMiddleware], postController.raisePrice);
+
+postRouter
+  .route('/handle-successful-payment')
+  .post([authMiddleware], postController.handleSuccessfulPayment);
 
 export default postRouter;

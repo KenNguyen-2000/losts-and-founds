@@ -16,6 +16,10 @@ import { QueryOptions, UpdateQuery, _FilterQuery } from 'mongoose';
 import axios from 'axios';
 import InternalServerError from '../errors/InternalServer.error';
 import { CookieOptions } from 'express';
+import Otp from '../models/otp.model';
+const stripe = require('stripe')(
+  'sk_test_51MlohlKIBca3SmNV3O8ppOcB1ZVei3CRdeUh0Xdpzwv6gvaPinumgq5KKmrcDKCydPyCjFZKJSRL9XrfAiYhRQfB00fN4oHelR'
+);
 dotenv.config();
 
 const login = async ({ email, password }: ILogin) => {
@@ -54,6 +58,29 @@ const register = async ({
     avatarUrl: avatarUrl,
     dob: dob,
   });
+  const account = await stripe.accounts.create({
+    type: 'express',
+    country: 'US',
+    email: newUser.email,
+    capabilities: {
+      card_payments: {
+        requested: true,
+      },
+      transfers: {
+        requested: true,
+      },
+    },
+    business_type: 'individual',
+    business_profile: {
+      url: 'http://www.facebook.com',
+      mcc: '7299',
+      name: 'Example, Inc.',
+      support_email: newUser.email,
+      support_url: 'https://www.facebook.com',
+    },
+  });
+  newUser.stripe_account_ID = account.id;
+  await newUser.save();
 
   const token = jwt.sign(
     {
@@ -61,6 +88,7 @@ const register = async ({
       avatarUrl: newUser.avatarUrl,
       name: newUser.name,
       email: newUser.email,
+      stripe_account_ID: newUser.stripe_account_ID,
     },
     process.env.JWT_SECRET!,
     {
@@ -78,7 +106,14 @@ const getInfo = async (userId: string) => {
   userId;
   const user = await Users.findOne(
     { _id: userId },
-    { name: 1, avatarUrl: 1, dob: 1, phoneNumber: 1, email: 1 }
+    {
+      name: 1,
+      avatarUrl: 1,
+      dob: 1,
+      phoneNumber: 1,
+      email: 1,
+      stripe_account_ID: 1,
+    }
   ).exec();
 
   if (!user) {
@@ -97,11 +132,11 @@ const updateProfile = async (
 };
 
 const changePassword = async ({
-  userId,
+  email,
   oldPassword,
   newPassword,
 }: IChangePassword) => {
-  const user = await Users.findOne({ _id: userId }).exec();
+  const user = await Users.findOne({ email: email }).exec();
 
   if (!user) {
     throw new NotFoundError('User not found!');
@@ -172,6 +207,64 @@ export async function getGoogleUser({
   }
 }
 
+const createVerificationOtp = async (email: string, otp: string) => {
+  const existingUser = await Users.findOne({ email: email }).exec();
+  console.log(email, otp);
+  if (!existingUser) {
+    throw new NotFoundError('Cannot found registed email!');
+  }
+
+  const hashedOtp = await bcrypt.hash(otp, 10);
+
+  const newOtp = await Otp.create({
+    otp: hashedOtp,
+    userId: existingUser._id,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + 3600000,
+  });
+
+  return newOtp;
+};
+
+const verifyOtp = async (otpId: string, otp: string) => {
+  const existingOtp = await Otp.findOne({
+    _id: otpId,
+  });
+
+  if (!existingOtp) {
+    throw new NotFoundError('Otp id not found');
+  }
+
+  if (Date.now() > existingOtp.expiresAt.getTime()) {
+    throw new BadRequestError('Otp expired!');
+  }
+
+  const isCorrect = await bcrypt.compare(otp, existingOtp.otp as string);
+
+  if (!isCorrect) {
+    throw new BadRequestError('Wrong otp code!');
+  }
+
+  return existingOtp;
+};
+
+const newPassword = async (newPassword: string, email: string) => {
+  const existingUser = await Users.findOne({
+    email: email,
+  });
+
+  if (!existingUser) {
+    throw new NotFoundError('Email not found');
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  existingUser.password = hashedPassword;
+  await existingUser.save();
+
+  return existingUser;
+};
+
 const userService = {
   login,
   register,
@@ -180,6 +273,9 @@ const userService = {
   updateProfile,
   getGoogleOAuthTokens,
   getGoogleUser,
+  createVerificationOtp,
+  verifyOtp,
+  newPassword,
 };
 
 export default userService;
