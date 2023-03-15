@@ -9,6 +9,7 @@ import { IUser } from '../../interfaces/user';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { selectUserInfo, userActions } from '../../redux/user/userSlice';
 import PostList from '../PostList/PostList';
+import axios from 'axios';
 
 const Profile = () => {
   const dispatch = useAppDispatch();
@@ -218,6 +219,24 @@ const Profile = () => {
   const showCreatedPost = () => {
     return <PostList />;
   };
+  const checkoutSession = async () => {
+    var urlParams = new URLSearchParams(window.location.search);
+    var sessionId = urlParams.get('session_id');
+    if (sessionId) {
+      console.log('aloha');
+      try {
+        const innerRes = await interceptor.post(
+          `/posts/handle-successful-payment`,
+          {
+            sessionId: sessionId,
+          }
+        );
+        console.log(innerRes);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
 
   useEffect(() => {
     dispatch(userActions.getUserInfo());
@@ -253,6 +272,17 @@ const Profile = () => {
             >
               <FontAwesomeIcon icon={regular('pen-to-square')} />
               <span>Created Posts</span>
+            </li>
+            <li
+              className={`profile-sidebar__item w-full flex items-center gap-3 py-3 pl-[30%] cursor-pointer ${
+                isShow
+                  ? 'border-r-4 border-amber-400'
+                  : 'hover:bg-gray-200 hover:border-r-4 hover:border-amber-400 hover:border-opacity-70'
+              }`}
+              onClick={checkoutSession}
+            >
+              <FontAwesomeIcon icon={regular('pen-to-square')} />
+              <span>Checkout Posts</span>
             </li>
           </ul>
         </div>

@@ -6,6 +6,7 @@ import {
   IPagingOpts,
   IPost,
   LikePostPayload,
+  RaisePricePayload,
   UpdatePostPayload,
 } from '../interfaces/post';
 import interceptor from './interceptor';
@@ -18,11 +19,13 @@ class PostService {
     description,
     postType,
     images,
+    itemName,
   }: CreatePostPayload): Promise<AxiosResponse> => {
     const formData = new FormData();
     formData.append('location', location);
     formData.append('description', description);
     formData.append('postType', postType);
+    formData.append('itemName', itemName);
 
     images?.forEach((file: Blob) => formData.append('images', file));
     const res = await interceptor.post<IPost>('/posts', formData, {
@@ -67,11 +70,13 @@ class PostService {
     description,
     postType,
     images,
+    itemName,
   }: UpdatePostPayload): Promise<AxiosResponse> => {
     const formData = new FormData();
     formData.append('location', location);
     formData.append('description', description);
     formData.append('postType', postType);
+    formData.append('itemName', itemName);
 
     if (images) {
       images?.forEach((file: Blob) => formData.append('images', file));
@@ -80,6 +85,18 @@ class PostService {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+    });
+    return res;
+  };
+
+  raisePrice = async ({
+    postId,
+    priceStep,
+    minPrice,
+  }: RaisePricePayload): Promise<AxiosResponse> => {
+    const res = await interceptor.put(`/posts/auction/raise/${postId}`, {
+      priceStep: priceStep,
+      minPrice: minPrice,
     });
     return res;
   };

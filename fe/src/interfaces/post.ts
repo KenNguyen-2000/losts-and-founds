@@ -1,6 +1,7 @@
 import { IComment } from './comment';
 export interface IPost {
   _id: string;
+  itemName: string;
   location: string;
   description: string;
   postType: string;
@@ -11,6 +12,10 @@ export interface IPost {
   status?: string;
   createdAt?: string;
   updatedAt?: string;
+  minPrice: string;
+  priceStep: string;
+  raisedUser?: string;
+  auctionExpired: Date;
 }
 
 export interface GetPostRes {
@@ -30,6 +35,7 @@ export interface PopulatedUser {
 }
 
 export interface CreatePostPayload {
+  itemName: string;
   location: string;
   description: string;
   postType: string;
@@ -38,10 +44,17 @@ export interface CreatePostPayload {
 
 export interface UpdatePostPayload {
   _id: string;
+  itemName: string;
   location: string;
   postType: 'lost' | 'found';
   description: string;
   images?: Blob[];
+}
+
+export interface RaisePricePayload {
+  postId: string;
+  priceStep: string;
+  minPrice: string;
 }
 
 export interface LikePostPayload {

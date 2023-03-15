@@ -170,7 +170,7 @@ const Login = () => {
 
               <div className='text-sm'>
                 <a
-                  href='#'
+                  href='/forgot-password'
                   className='font-medium text-amber-600 hover:text-amber-500'
                 >
                   Forgot your password?

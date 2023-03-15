@@ -1,10 +1,20 @@
 import React from 'react';
 import './App.scss';
 import { Routes, Route } from 'react-router';
-import { Login, PostList, Profile, Register } from './routes';
+import {
+  AuctionPosts,
+  ChangePassword,
+  ForgotPassword,
+  Login,
+  PostList,
+  Profile,
+  Register,
+  VerifyOtp,
+} from './routes';
 import PublicRoute from './routes/PublicRoute';
 import PrivateRoute from './routes/PrivateRoute';
 import LayoutedPage from './components/LayoutedPage/LayoutedPage';
+import Notfound from './routes/Notfound/Notfound';
 
 function App() {
   return (
@@ -13,6 +23,9 @@ function App() {
         <Route path='/' element={<PublicRoute />}>
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
+          <Route path='/forgot-password' element={<ForgotPassword />} />
+          <Route path='/verify-otp/:otpId' element={<VerifyOtp />} />
+          <Route path='/change-password' element={<ChangePassword />} />
         </Route>
         <Route path='/' element={<PrivateRoute />}>
           <Route index element={<LayoutedPage component={<PostList />} />} />
@@ -32,12 +45,11 @@ function App() {
           />
           <Route
             path='/post-list/auction'
-            element={
-              <LayoutedPage component={<PostList typePost='auction' />} />
-            }
+            element={<LayoutedPage component={<AuctionPosts />} />}
           />
           <Route path='/profile' element={<Profile />} />
         </Route>
+        <Route path='*' element={<Notfound />} />
       </Routes>
     </div>
   );

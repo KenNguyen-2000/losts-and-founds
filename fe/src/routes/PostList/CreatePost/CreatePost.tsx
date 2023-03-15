@@ -3,7 +3,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Cookies from 'js-cookie';
 import jwtDecode from 'jwt-decode';
 import React, { useState, useEffect } from 'react';
-import { postActions, selectPostsLoading } from '../../../redux/post/postSlice';
+import {
+  postActions,
+  selectPostsError,
+  selectPostsLoading,
+} from '../../../redux/post/postSlice';
 import { useAppDispatch, useAppSelector } from '../../../redux/store';
 
 const CreatePost = ({ closeModal }: any) => {
@@ -13,10 +17,11 @@ const CreatePost = ({ closeModal }: any) => {
   const [files, setFiles] = useState<Blob[]>([]);
   const dispatch = useAppDispatch();
   const isLoading = useAppSelector(selectPostsLoading);
+  const error = useAppSelector(selectPostsError);
 
   const handleCreatePost = async (event: any) => {
     event.preventDefault();
-    const { location, description, postType }: any = event.target;
+    const { location, description, postType, itemName }: any = event.target;
     let postTypeValue = postType[0];
     for (let type of postType) {
       if (type.checked) {
@@ -24,17 +29,22 @@ const CreatePost = ({ closeModal }: any) => {
       }
     }
 
-    dispatch(
-      postActions.createPost({
-        location: location.value,
-        description: description.value,
-        postType: postTypeValue.value,
-        images: files,
-      })
-    );
+    try {
+      dispatch(
+        postActions.createPost({
+          location: location.value,
+          description: description.value,
+          postType: postTypeValue.value,
+          itemName: itemName.value,
+          images: files,
+        })
+      );
 
-    if (!isLoading) {
-      closeModal();
+      if (!isLoading && error === undefined) {
+        closeModal();
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -79,6 +89,21 @@ const CreatePost = ({ closeModal }: any) => {
             className='w-full flex flex-col gap-4'
           >
             <div className='w-full grid grid-cols-6 gap-4'>
+              <div className='col-span-3'>
+                <label
+                  htmlFor='item-name'
+                  className='block text-sm font-medium leading-6 text-gray-900'
+                >
+                  Item name
+                </label>
+                <input
+                  type='text'
+                  name='itemName'
+                  id='item-name'
+                  autoComplete='given-name'
+                  className='mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6'
+                />
+              </div>
               <div className='col-span-3'>
                 <label
                   htmlFor='location'
@@ -152,6 +177,21 @@ const CreatePost = ({ closeModal }: any) => {
                     className='ml-3 block text-sm font-medium leading-6 text-gray-900 cursor-pointer'
                   >
                     Found
+                  </label>
+                </div>
+                <div className='flex items-center '>
+                  <input
+                    id='category-auction'
+                    name='postType'
+                    type='radio'
+                    value='auction'
+                    className='h-4 w-4 border-gray-300 text-amber-500 focus:ring-amber-500 cursor-pointer'
+                  />
+                  <label
+                    htmlFor='category-auction'
+                    className='ml-3 block text-sm font-medium leading-6 text-gray-900 cursor-pointer'
+                  >
+                    Auction
                   </label>
                 </div>
               </div>

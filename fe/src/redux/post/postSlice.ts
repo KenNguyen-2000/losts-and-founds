@@ -7,10 +7,10 @@ import {
 import {
   CreatePostPayload,
   GetPostRes,
-  IGetMorePost,
   IPagingOpts,
   LikePostPayload,
   LikePostRes,
+  RaisePricePayload,
   UpdatePostPayload,
 } from './../../interfaces/post';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
@@ -129,6 +129,24 @@ const postSlice = createSlice({
     updatePostFailed(state, action: PayloadAction<string>) {
       state.error = action.payload;
       state.loading = false;
+    },
+
+    raisePrice(state, action: PayloadAction<RaisePricePayload>) {
+      // state.loading = true;
+    },
+    raisePriceSuccess(state, action: PayloadAction<IPost>) {
+      state.posts = state.posts.map((post: IPost) => {
+        if (post._id === action.payload._id) {
+          return action.payload;
+        } else {
+          return post;
+        }
+      });
+      // state.loading = false;
+    },
+    raisePriceFailed(state, action: PayloadAction<string>) {
+      state.error = action.payload;
+      // state.loading = false;
     },
 
     deletePost(state, action: PayloadAction<string>) {
@@ -250,5 +268,6 @@ export const selectPostsLoading = (state: RootState) =>
 export const selectLoading = (state: RootState) => state.posts.loading;
 export const selectPostsHasMore = (state: RootState) => state.posts.hasMore;
 export const selectPostsPageNo = (state: RootState) => state.posts.pageNo;
+export const selectPostsError = (state: RootState) => state.posts.error;
 
 export default postReducer;

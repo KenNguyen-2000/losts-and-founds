@@ -13,6 +13,7 @@ import { selectUserInfo } from '../../../redux/user/userSlice';
 import jwtDecode from 'jwt-decode';
 import ReactTimeAgo from 'react-time-ago';
 import Cookies from 'js-cookie';
+import interceptor from '../../../services/interceptor';
 
 interface IPostComponent extends IPost {
   setSelectedPost: any;
@@ -33,6 +34,7 @@ const Post = ({
   updatedAt,
   setSelectedPost,
   ref,
+  itemName,
 }: IPostComponent) => {
   const dispatch = useAppDispatch();
 
@@ -72,7 +74,7 @@ const Post = ({
               <div className='text-base font-medium'>
                 {createdBy.name}{' '}
                 <span className='text-sm'>
-                  {postType} at {location}
+                  {postType} {itemName} at {location}
                 </span>
               </div>
               <div className='text-xs text-gray-400'>
@@ -111,6 +113,9 @@ const Post = ({
             </div>
           ) : null}
         </header>
+        <div className='px-4 text-sm font-medium text-gray-700 pb-2'>
+          Contact: <span>{userInfo.email}</span>
+        </div>
         <section className='post__body w-full flex flex-col gap-2'>
           <div className='post__description w-full px-4'>{description}</div>
           <div className='max-w-full min-w-[500px] px-4 border-t border-b border-gray-200 flex items-center justify-center cursor-pointer'>

@@ -2,6 +2,7 @@ import {
   IGetMorePost,
   LikePostPayload,
   IPagingOpts,
+  RaisePricePayload,
 } from './../../interfaces/post';
 import { CreatePostPayload, UpdatePostPayload } from './../../interfaces/post';
 import { PayloadAction } from '@reduxjs/toolkit';
@@ -142,6 +143,23 @@ function* updatePost(action: PayloadAction<UpdatePostPayload>) {
   }
 }
 
+function* raisePrice(action: PayloadAction<RaisePricePayload>) {
+  try {
+    const res: AxiosResponse = yield call(
+      postService.raisePrice,
+      action.payload
+    );
+    const { status, data } = res;
+    if (status === 200) {
+      yield put(postActions.raisePriceSuccess(data.post));
+    } else {
+      yield put(postActions.raisePriceFailed('Something went wrong')); // Dispatch action
+    }
+  } catch (error: any) {
+    yield put(postActions.raisePriceFailed(error.message)); // Dispatch action
+  }
+}
+
 function* commentPost(action: PayloadAction<CommentPostPayload>) {
   try {
     const res: AxiosResponse = yield call(
@@ -234,4 +252,5 @@ export function* postSaga() {
   yield takeLatest(postActions.deleteCommentPost.type, deleteCommentPost);
   yield takeLatest(postActions.editCommentPost.type, editCommentPost);
   yield takeLatest(postActions.getPostsBySearch.type, getPostsBySearch);
+  yield takeEvery(postActions.raisePrice.type, raisePrice);
 }

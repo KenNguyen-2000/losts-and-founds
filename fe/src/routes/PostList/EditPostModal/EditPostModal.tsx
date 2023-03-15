@@ -5,6 +5,7 @@ import { IPost, UpdatePostPayload } from '../../../interfaces/post';
 import { postActions, selectPostsLoading } from '../../../redux/post/postSlice';
 import { useAppDispatch, useAppSelector } from '../../../redux/store';
 import interceptor from '../../../services/interceptor';
+import PreviewImage from '../Post/PreviewImage/PreviewImage';
 
 interface IEditPostModal {
   closeModal: any;
@@ -12,9 +13,10 @@ interface IEditPostModal {
 }
 
 const EditPostModal = ({ closeModal, post }: IEditPostModal) => {
-  const { _id, createdBy, location, description, images, postType } = post;
+  const { _id, createdBy, location, description, images, postType, itemName } =
+    post;
 
-  const [imageSrc, setImageSrc] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
   const [files, setFiles] = useState<Blob[]>([]);
   const [isImgChanges, setIsImgChanges] = useState(false);
   const dispatch = useAppDispatch();
@@ -22,7 +24,7 @@ const EditPostModal = ({ closeModal, post }: IEditPostModal) => {
 
   const handleUpdatePost = async (event: any) => {
     event.preventDefault();
-    const { location, description, postType }: any = event.target;
+    const { location, description, postType, itemName }: any = event.target;
     let postTypeValue = postType[0];
     for (let type of postType) {
       if (type.checked) {
@@ -35,6 +37,7 @@ const EditPostModal = ({ closeModal, post }: IEditPostModal) => {
       location: location.value,
       description: description.value,
       postType: postTypeValue.value,
+      itemName: itemName.value,
     };
     if (isImgChanges) {
       dispatchFields.images = files;
@@ -58,6 +61,13 @@ const EditPostModal = ({ closeModal, post }: IEditPostModal) => {
       className='fixed inset-0 py-5 backdrop-brightness-90 flex items-center justify-center z-50'
       onClick={closeModal}
     >
+      {showPreview && (
+        <PreviewImage
+          imgNum={0}
+          images={images}
+          setClosePreview={setShowPreview(false)}
+        />
+      )}
       <div
         className='min-w-[500px] md:w-[600px] lg:w-[700px] bg-white rounded-lg flex flex-col'
         onClick={(event) => event.stopPropagation()}
@@ -90,6 +100,22 @@ const EditPostModal = ({ closeModal, post }: IEditPostModal) => {
             className='w-full flex flex-col gap-4'
           >
             <div className='w-full grid grid-cols-6 gap-4'>
+              <div className='col-span-3'>
+                <label
+                  htmlFor='item-name'
+                  className='block text-sm font-medium leading-6 text-gray-900'
+                >
+                  Item Name
+                </label>
+                <input
+                  type='text'
+                  name='itemName'
+                  id='item-name'
+                  defaultValue={itemName}
+                  autoComplete='given-name'
+                  className='mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6'
+                />
+              </div>
               <div className='col-span-3'>
                 <label
                   htmlFor='location'
@@ -168,6 +194,21 @@ const EditPostModal = ({ closeModal, post }: IEditPostModal) => {
                     Found
                   </label>
                 </div>
+                <div className='flex items-center '>
+                  <input
+                    id='category-auction'
+                    name='postType'
+                    type='radio'
+                    value='auction'
+                    className='h-4 w-4 border-gray-300 text-amber-500 focus:ring-amber-500 cursor-pointer'
+                  />
+                  <label
+                    htmlFor='category-auction'
+                    className='ml-3 block text-sm font-medium leading-6 text-gray-900 cursor-pointer'
+                  >
+                    Auction
+                  </label>
+                </div>
               </div>
             </fieldset>
             <div className='w-full p-2 border border-gray-200 rounded-lg relative'>
@@ -189,6 +230,13 @@ const EditPostModal = ({ closeModal, post }: IEditPostModal) => {
                   <FontAwesomeIcon icon={solid('download')} size={'2xl'} />
                 </div>
                 <p className='font-medium'>Add Images</p>
+                <img
+                  alt='item '
+                  crossOrigin='anonymous'
+                  src={process.env.REACT_APP_IMG_URL + '/' + images[0]}
+                  className='h-full w-auto object-cover absolute top-0 bottom-0 z-10'
+                  onClick={() => setShowPreview(true)}
+                />
               </label>
             </div>
             <button
